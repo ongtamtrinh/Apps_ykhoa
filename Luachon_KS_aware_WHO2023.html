@@ -1,0 +1,1632 @@
+<!DOCTYPE html>
+<html lang="vi" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1e40af">
+    <title>Trợ Lý Kháng Sinh AWaRe V2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: { bg: '#0f172a', card: '#1e293b', text: '#f8fafc', border: '#334155' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; transition: background-color 0.3s; }
+        .dark body { background-color: #0f172a; color: #f8fafc; }
+        
+        input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        select, input { outline: none; transition: all 0.2s; }
+        
+        /* Sticky Header & Bottom Nav */
+        .sticky-header { position: sticky; top: 0; z-index: 50; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; padding-bottom: env(safe-area-inset-bottom); }
+        
+        /* Animation chuyển Tab mượt mà giống Sepsis */
+        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+
+        /* Toast Notification */
+        #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 8px 16px; border-radius: 20px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 100; }
+        #toast.show { opacity: 1; }
+    </style>
+</head>
+<body class="text-gray-800 pb-24 dark:text-gray-200">
+
+    <div class="bg-blue-800 dark:bg-slate-900 text-white p-4 shadow-md sticky-header flex justify-between items-center transition-colors">
+        <div>
+            <h1 class="text-xl font-bold leading-tight">AWaRe GUIDE</h1>
+            <p class="text-xs text-blue-200 dark:text-slate-400">Phác đồ Kháng sinh WHO 2023</p>
+        </div>
+        <button onclick="toggleDarkMode()" class="p-2 bg-blue-700 dark:bg-slate-800 rounded-full hover:bg-blue-600 dark:hover:bg-slate-700 transition">
+            <svg id="icon-sun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            <svg id="icon-moon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+        </button>
+    </div>
+
+    <div class="max-w-3xl mx-auto p-4 md:p-6">
+
+        <div id="tab1" class="tab-content active">
+            <div class="bg-white dark:bg-dark-card p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border mb-6 transition-colors">
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">1. Tìm / Chọn bệnh lý:</label>
+                    <div class="relative mb-2">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input type="text" id="diseaseSearch" placeholder="Gõ để lọc bệnh (VD: phổi, não...)" class="w-full pl-10 border border-gray-300 dark:border-dark-border rounded-xl p-3 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 font-medium transition-colors" oninput="filterDiseases()">
+                    </div>
+                    <select id="diseaseSelect" class="w-full border border-gray-300 dark:border-dark-border rounded-xl p-3 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 font-medium shadow-sm transition-colors">
+                        </select>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">2. Đối tượng:</label>
+                        <select id="patientType" class="w-full border border-gray-300 dark:border-dark-border rounded-xl p-3 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 font-medium shadow-sm transition-colors" onchange="toggleWeight()">
+                            <option value="adult">Người lớn</option>
+                            <option value="child">Trẻ em</option>
+                        </select>
+                    </div>
+                    <div id="weightContainer" class="hidden">
+                        <label class="block text-sm font-bold text-blue-700 dark:text-blue-400 mb-2">⚖️ Cân nặng (kg) để tính liều:</label>
+                        <input type="number" id="weightInput" placeholder="Nhập số kg..." class="w-full border border-blue-300 dark:border-blue-700 rounded-xl p-3 bg-blue-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 font-bold shadow-sm transition-colors">
+                    </div>
+                </div>
+
+                <button onclick="calculateDisease()" class="w-full bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-3.5 px-4 rounded-xl shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] transition-all flex justify-center items-center mt-2 uppercase tracking-wide">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Tra Cứu Phác Đồ
+                </button>
+            </div>
+            
+            <div id="result-disease" class="mt-4 hidden animate-fade-in pb-4"></div>
+        </div>
+
+        <div id="tab2" class="tab-content">
+            <div class="bg-white dark:bg-dark-card p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border mb-6 transition-colors">
+                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Tìm nhanh phân tầng AWaRe:</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <input type="text" id="drugInput" placeholder="Gõ tên thuốc (VD: Meropenem)..." class="w-full pl-10 border border-gray-300 dark:border-dark-border rounded-xl p-3 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 font-medium transition-colors" oninput="searchDrug()">
+                </div>
+            </div>
+            <div id="result-drug" class="mt-4 pb-4"></div>
+        </div>
+
+        <div id="tab3" class="tab-content">
+            <div class="bg-white dark:bg-dark-card p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border mb-4 transition-colors">
+                <h3 class="font-bold text-lg text-gray-800 dark:text-white mb-3 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                    Tính MLCT (eGFR) chỉnh liều
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Ước tính mức lọc cầu thận theo Cockcroft-Gault để chỉnh liều kháng sinh.</p>
+                
+                <div class="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Tuổi</label>
+                        <input type="number" id="cgAge" class="w-full border border-gray-300 dark:border-dark-border rounded-lg p-2 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Cân nặng (kg)</label>
+                        <input type="number" id="cgWeight" class="w-full border border-gray-300 dark:border-dark-border rounded-lg p-2 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Creatinin máu</label>
+                        <input type="number" id="cgCre" placeholder="µmol/L" class="w-full border border-gray-300 dark:border-dark-border rounded-lg p-2 bg-gray-50 dark:bg-slate-800 text-gray-900 dark:text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-500 mb-1">Giới tính</label>
+                        <select id="cgSex" class="w-full border border-gray-300 dark:border-dark-border rounded-lg p-2 bg-white dark:bg-slate-800 text-gray-900 dark:text-white">
+                            <option value="male">Nam</option>
+                            <option value="female">Nữ</option>
+                        </select>
+                    </div>
+                </div>
+                <button onclick="calculateEGFR()" class="w-full bg-slate-800 dark:bg-blue-600 text-white font-bold py-2 rounded-lg">Tính eGFR</button>
+                <div id="egfrResult" class="mt-4 text-center font-bold text-xl text-blue-700 dark:text-blue-400 hidden"></div>
+            </div>
+        </div>
+        <div id="tab4" class="tab-content">
+            <div class="bg-white dark:bg-dark-card p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-dark-border mb-6 transition-colors">
+                <h3 class="font-bold text-lg text-red-700 dark:text-red-400 mb-3 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    Phác đồ theo đích Vi khuẩn
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Sử dụng khi đã có kết quả nuôi cấy vi sinh hoặc nghi ngờ cao nhiễm vi khuẩn đa kháng.</p>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Chọn tác nhân Vi sinh:</label>
+                    <select id="pathogenSelect" class="w-full border border-red-300 dark:border-red-800 rounded-xl p-3 bg-red-50 dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 font-medium transition-colors">
+                        <option value="mrsa">Tụ cầu vàng kháng Methicillin (MRSA)</option>
+                        <option value="esbl">E. coli / Klebsiella sinh ESBL</option>
+                        <option value="pseudomonas">Trực khuẩn mủ xanh (P. aeruginosa)</option>
+                    </select>
+                </div>
+                
+                <button onclick="calculatePathogen()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-[0_4px_14px_0_rgba(220,38,38,0.39)] transition-all uppercase tracking-wide">
+                    Xem Kháng sinh Nhạy cảm
+                </button>
+            </div>
+            
+            <div id="result-pathogen" class="mt-4 hidden animate-fade-in pb-4"></div>
+        </div>
+
+    </div>
+
+    <div class="bottom-nav bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-dark-border flex justify-around items-center h-16 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] transition-colors">
+        <button onclick="switchTab(1)" class="nav-btn w-full h-full flex flex-col items-center justify-center text-blue-600 dark:text-blue-400 transition-colors">
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+            <span class="text-[10px] font-bold uppercase tracking-wide">Bệnh Lý</span>
+        </button>
+        <button onclick="switchTab(2)" class="nav-btn w-full h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            <span class="text-[10px] font-bold uppercase tracking-wide">Thuốc</span>
+        </button>
+        <button onclick="switchTab(3)" class="nav-btn w-full h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <span class="text-[10px] font-bold uppercase tracking-wide">Công cụ</span>
+        </button>
+        <button onclick="switchTab(4)" class="nav-btn w-full h-full flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors">
+            <svg class="w-6 h-6 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"></path></svg>
+            <span class="text-[10px] font-bold uppercase tracking-wide">Vi Sinh</span>
+        </button>
+    </div>
+
+    <div id="toast">Đã copy y lệnh!</div>
+    <script>
+        // ======================================================================
+        // 1. CƠ SỞ DỮ LIỆU JSON (AWARE WHO 2023)
+        // ======================================================================
+        const awareDB = {
+            diseases: {
+                "viem_tai_giua": {
+                    name: "Viêm tai giữa cấp tính (Acute Otitis Media)", 
+                    adult: { 
+                        consideration: "Ưu tiên giảm đau. Kháng sinh chỉ dùng khi triệu chứng nặng (sốt cao, đau nhiều), chảy mủ tai, hoặc không thuyên giảm sau 48-72 giờ theo dõi.", 
+                        duration: "5 ngày", 
+                        access: [
+                            { drug: "Amoxicillin", dose: "500 mg Uống cách 8 giờ (hoặc 1 g cách 12 giờ)" },
+                            { drug: "Amoxicillin + clavulanic acid", dose: "500 mg + 125 mg Uống cách 8 giờ" }
+                        ], 
+                        access_alt: [], watch: [], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Theo dõi 48-72 giờ đối với trẻ > 2 tuổi không có triệu chứng nặng. DÙNG KHÁNG SINH NGAY cho trẻ < 2 tuổi, viêm cả 2 bên tai, hoặc có triệu chứng nặng (sốt cao > 39°C, đau tai dữ dội, chảy mủ). Chú ý kết hợp thuốc giảm đau (Paracetamol/Ibuprofen).", 
+                        duration: "5 ngày", 
+                        access: [
+                        { drug: "Amoxicillin", 
+                            dose: `Liều cao: 40 - 45 mg/kg/liều. Uống cách nhau 12 giờ (Tối đa 3 g/ngày)<br><i>(Lựa chọn đầu tay ưu tiên)</i>
+                            <div style="margin-top: 12px; font-size: 13px; max-width: 450px;">
+                                <div style="font-weight: 600; color: #1565c0; margin-bottom: 6px;">
+                                📌 Bảng liều tham khảo (Uống mỗi 12 giờ)
+                                </div>
+                                <div style="border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                                    <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                                        <thead style="background-color: #f1f5f9; color: #334155;">
+                                            <tr>
+                                                <th style="padding: 8px; border-bottom: 1px solid #cbd5e1; font-weight: 600;">Cân nặng</th>
+                                                <th style="padding: 8px; border-bottom: 1px solid #cbd5e1; font-weight: 600;">Liều / 1 lần</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="color: #475569;">
+                                            <tr>
+                                                <td style="padding: 7px; border-bottom: 1px solid #f1f5f9;">5 kg</td>
+                                                <td style="padding: 7px; border-bottom: 1px solid #f1f5f9; font-weight: 500;">200 - 225 mg</td>
+                                            </tr>
+                                            <tr style="background-color: #f8fafc;">
+                                                <td style="padding: 7px; border-bottom: 1px solid #f1f5f9;">10 kg</td>
+                                                <td style="padding: 7px; border-bottom: 1px solid #f1f5f9; font-weight: 500;">400 - 450 mg</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 7px; border-bottom: 1px solid #f1f5f9;">15 kg</td>
+                                                <td style="padding: 7px; border-bottom: 1px solid #f1f5f9; font-weight: 500;">600 - 675 mg</td>
+                                            </tr>
+                                            <tr style="background-color: #f8fafc;">
+                                                <td style="padding: 7px;">20 kg</td>
+                                                <td style="padding: 7px; font-weight: 500;">800 - 900 mg</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>`
+                        },
+                        { drug: "Amoxicillin + clavulanic acid", 
+                            dose: `Liều cao (tính theo amoxicillin): 80- 90 mg/kg, mỗi 12 giờ\n(Dùng khi có tiền sử dùng amoxicillin trong 30 ngày qua, viêm kết mạc mủ kèm theo, hoặc không đáp ứng Amoxicillin sau 48-72h)
+                        <div style="margin-top: 12px; font-size: 13px; max-width: 450px;">
+                                <div style="font-weight: 600; color: #1565c0; margin-bottom: 6px;">
+                                📌 Bảng liều tham khảo (Uống mỗi 12 giờ), tính theo thành phần amoxicillin
+                                </div>
+                                <div style="border-radius: 8px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                                    <table style="width: 100%; border-collapse: collapse; text-align: center;">
+                                        <thead style="background-color: #f1f5f9; color: #334155;">
+                                            <tr>
+                                                <th style="padding: 8px; border-bottom: 1px solid #cbd5e1; font-weight: 600;">Cân nặng</th>
+                                                <th style="padding: 8px; border-bottom: 1px solid #cbd5e1; font-weight: 600;">Liều / 1 lần</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody style="color: #475569;">
+                                            <tr>
+                                                <td style="padding: 7px; border-bottom: 1px solid #f1f5f9;">5 kg</td>
+                                                <td style="padding: 7px; border-bottom: 1px solid #f1f5f9; font-weight: 500;">200 - 225 mg</td>
+                                            </tr>
+                                            <tr style="background-color: #f8fafc;">
+                                                <td style="padding: 7px; border-bottom: 1px solid #f1f5f9;">10 kg</td>
+                                                <td style="padding: 7px; border-bottom: 1px solid #f1f5f9; font-weight: 500;">400 - 450 mg</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 7px; border-bottom: 1px solid #f1f5f9;">15 kg</td>
+                                                <td style="padding: 7px; border-bottom: 1px solid #f1f5f9; font-weight: 500;">600 - 675 mg</td>
+                                            </tr>
+                                            <tr style="background-color: #f8fafc;">
+                                                <td style="padding: 7px;">20 kg</td>
+                                                <td style="padding: 7px; font-weight: 500;">800 - 900 mg</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>`
+                        }
+                        ], 
+                        access_alt: [], watch: [],
+                    reserve: [] 
+                    }
+                },
+                "viem_hong": {
+                    name: "Viêm họng", 
+                    adult: { consideration: "Đa số do virus. Kháng sinh để ngừa thấp tim ở vùng lưu hành.", duration: "5-10 ngày", access: [{ drug: "Phenoxymethylpenicillin", dose: "500 mg cách nhau 6 giờ, ĐƯỜNG UỐNG" }, { drug: "Amoxicillin", dose: "500 mg cách nhau 8 giờ, ĐƯỜNG UỐNG" }], access_alt: [{ drug: "Cefalexin", dose: "500 mg cách nhau 8 giờ" }], watch: [{ drug: "Clarithromycin", dose: "500 mg cách nhau 12 giờ" }], reserve: [] },
+                    child: { consideration: "Tương tự người lớn.", duration: "5-10 ngày", access: [{ drug: "Amoxicillin", dose: "50 mg/kg/ngày chia 1-2 lần" }], access_alt: [], watch: [], reserve: [] }
+                },
+                "viem_xoang": {
+                    name: "Viêm xoang cấp tính", 
+                    adult: { consideration: "Chỉ dùng kháng sinh khi kéo dài >10 ngày hoặc sốt cao/mủ mũi >3 ngày.", duration: "5 ngày", access: [{ drug: "Amoxicillin", dose: "500 mg cách nhau 8 giờ, ĐƯỜNG UỐNG" }], access_alt: [{ drug: "Amoxicillin + clavulanic acid", dose: "500 mg + 125 mg cách nhau 8 giờ" }], watch: [], reserve: [] },
+                    child: { consideration: "Tương tự người lớn.", duration: "5 ngày", access: [{ drug: "Amoxicillin", dose: "80-90 mg/kg/ngày chia 2-3 lần" }], access_alt: [], watch: [], reserve: [] }
+                },
+                "viem_phoi_nhe": {
+                    name: "Viêm phổi cộng đồng - Nhẹ/Trung bình (Ngoại trú)", 
+                    adult: { 
+                        consideration: "Ưu tiên Amoxicillin đơn độc liều cao. CHỈ dùng nhóm Macrolid (Azithromycin) khi nghi ngờ vi khuẩn không điển hình hoặc bệnh nhân dị ứng Penicillin.", 
+                        duration: "5 ngày", 
+                        access: [
+                            { drug: "Amoxicillin", dose: "1 g. Uống cách 8 giờ" },
+                            { drug: "Amoxicillin + clavulanic acid", dose: "875mg + 125mg. Uống cách 8 giờ (Dành cho người già hoặc có bệnh nền)" },
+                            { drug: "Doxycycline", dose: "100 mg. Uống cách 12 giờ" }
+                        ], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Azithromycin", dose: "500 mg. Uống 1 lần/ngày trong 3 ngày" },
+                            { drug: "Clarithromycin", dose: "500 mg. Uống cách 12 giờ" }
+                        ], 
+                        reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Phân biệt viêm phổi do virus và vi khuẩn. Đa số viêm phổi nhẹ ở trẻ nhỏ dưới 5 tuổi là do virus (RSV). Nếu nghi ngờ vi khuẩn, ưu tiên dùng Amoxicillin liều cao.", 
+                        duration: "5 ngày", 
+                        access: [
+                            { drug: "Amoxicillin", dose: "40 - 45 mg/kg/liều. Uống cách nhau 12 giờ (Tối đa 3 g/ngày)" }
+                        ], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Azithromycin", dose: "10 mg/kg Uống 1 lần/ngày vào ngày 1, sau đó 5 mg/kg 1 lần/ngày từ ngày 2 đến ngày 5 (Chỉ dùng khi nghi ngờ Mycoplasma)" }
+                        ], 
+                        reserve: [] 
+                    }
+                },
+                "viem_phoi_nang": {
+                    name: "Viêm phổi cộng đồng - Nặng (Nhập viện)", 
+                    adult: { 
+                        consideration: "Bắt buộc dùng kháng sinh tĩnh mạch (TM). Lựa chọn đầu tay luôn là PHỐI HỢP một Beta-lactam (nhóm Access hoặc Watch) + một Macrolid (nhóm Watch).", 
+                        duration: "Thường 7 ngày (Có thể chuyển sang đường uống khi lâm sàng ổn định)", 
+                        access: [
+                            { drug: "Amoxicillin + clavulanic acid", dose: "Truyền/tiêm TM, 1 g + 200 mg, cách nhau 8 giờ <Br><i>Có thể cân nhắc </i> dùng liều hàng ngày cao hơn: 1 g + 200 mg, cách nhau 6 giờ" }
+                        ],
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Ceftriaxone", dose: "Ceftriaxone: 2 g Tiêm TM 1 lần/ngày" },
+                            { drug: "Cefotaxime", dose: "Cefotaxime: 1 - 2 g Tiêm TM mỗi 8 giờ" },
+                            { drug: "+ Macrolid", dose: "NẾU CURB-65 ≥2 --> CÂN NHẮC BỔ SUNG <Br>VD: Clarithromycin 500 mg TM/Uống mỗi 12 giờ HOẶC Azithromycin 500 mg TM/Uống 1 lần/ngày</i>" },
+                            { drug: "Or Levofloxacin (đơn độc)", dose: "500 mg Tiêm TM 1 lần/ngày (hoặc mỗi 12 giờ) HOẶC 750 mg Tiêm TM 1 lần/ngày<br><i>(Chỉ dùng khi dị ứng nghiêm trọng với Penicillin)</i>" }
+                        ], 
+                        reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Ưu tiên phối hợp Ampicillin và Gentamicin làm lựa chọn đầu tay. Các Cephalosporin thế hệ 3 (Ceftriaxone/Cefotaxime) dùng làm thay thế hoặc khi dị ứng.", 
+                        duration: "Thường 7 - 10 ngày", 
+                        access: [
+                            { drug: "Ampicillin + Gentamicin", dose: "Ampicillin: 50 mg/kg Tiêm TM/TB mỗi 6 giờ<br><span style='color: #d9534f; font-weight: bold;'>CỘNG THÊM</span><br>Gentamicin: 7.5 mg/kg Tiêm TM/TB 1 lần/ngày" }
+                        ], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Ceftriaxone", dose: "80 mg/kg Tiêm TM/TB 1 lần/ngày<br><i>(Dùng thay thế hoặc khi dị ứng nghiêm trọng với Penicillin)</i>" },
+                            { drug: "Cefotaxime", dose: "50 mg/kg Tiêm TM/TB mỗi 8 giờ<br><i>(Dùng thay thế hoặc khi dị ứng nghiêm trọng với Penicillin)</i>" }
+                        ], 
+                        reserve: [] 
+                    }
+                },
+                "copd": {
+                    name: "Đợt cấp Bệnh phổi tắc nghẽn mạn tính (COPD)", 
+                    adult: { 
+                        consideration: "Chỉ dùng kháng sinh khi có tăng khó thở, tăng thể tích đờm VÀ đờm mủ (đờm chuyển màu xanh/vàng). Nếu chỉ có ho/khó thở mà đờm trong thì thường do virus hoặc nguyên nhân khác.", 
+                        duration: "5 ngày", 
+                        access: [
+                            { drug: "Amoxicillin", dose: "500 mg Uống cách 8 giờ" },
+                            { drug: "Amoxicillin + clavulanic acid", dose: "500 mg + 125 mg Uống cách 8 giờ" }
+                        ], 
+                        access_alt: [
+                            { drug: "Doxycycline", dose: "100 mg Uống cách 12 giờ" }
+                        ], watch: [], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Bệnh lý này chủ yếu gặp ở người lớn/người hút thuốc.", 
+                        duration: "Không áp dụng", 
+                        access: [], access_alt: [], watch: [], reserve: [] 
+                    }
+                },
+                "viem_bang_quang": {
+                    name: "Viêm bàng quang cấp (Không biến chứng)", adult: { consideration: "Nữ không thai. Phân biệt với viêm thận bể thận.", duration: "1 - 5 ngày", access: [{ drug: "Nitrofurantoin", dose: "100 mg cách 12 giờ (5 ngày)" }, { drug: "Trimethoprim / Sulfamethoxazole", dose: "160/800mg cách 12 giờ (3 ngày)" }], access_alt: [], watch: [{ drug: "Fosfomycin", dose: "3 g UỐNG 1 LIỀU DUY NHẤT" }], reserve: [] },
+                    child: { consideration: "Gửi cấy nước tiểu. Sốt thường là UTI trên.", duration: "3-5 ngày", access: [{ drug: "Amoxicillin + clavulanic acid", dose: "40-50 mg/kg/ngày chia 2-3 lần" }, { drug: "Cefalexin", dose: "50 mg/kg/ngày chia 2-3 lần" }], access_alt: [], watch: [], reserve: [] }
+                },
+                "ly_truc_khuan": {
+                    name: "Lỵ trực khuẩn (Shigellosis)", adult: { consideration: "Bù dịch Oresol. Kháng sinh làm giảm thời gian bệnh.", duration: "3 ngày", access: [], access_alt: [], watch: [{ drug: "Ciprofloxacin", dose: "500 mg cách 12 giờ" }, { drug: "Azithromycin", dose: "500 mg/ngày" }], reserve: [] },
+                    child: { consideration: "Bù dịch và Kẽm. Không dùng thuốc cầm tiêu chảy.", duration: "3 ngày", access: [], access_alt: [], watch: [{ drug: "Ciprofloxacin", dose: "15 mg/kg/liều cách 12 giờ" }, { drug: "Azithromycin", dose: "10-12 mg/kg/ngày" }], reserve: [] }
+                },
+                "viem_mo_te_bao": {
+                    name: "Viêm mô tế bào (Cellulitis)",
+                    adult: {
+                        mild: {
+                            consideration: "Tổn thương nhỏ, không có biểu hiện toàn thân (không sốt, không lạnh run). Có thể điều trị ngoại trú bằng đường uống.",
+                            duration: "5 ngày",
+                            access: [{ drug: "Cefalexin", dose: "500 mg cách 8 giờ, ĐƯỜNG UỐNG" }, { drug: "Amoxicillin + clavulanic acid", dose: "500/125 mg cách 8 giờ, ĐƯỜNG UỐNG" }],
+                            access_alt: [{ drug: "Clindamycin", dose: "300 - 450 mg cách 8 giờ, ĐƯỜNG UỐNG" }], watch: [], reserve: []
+                        },
+                        severe: {
+                            consideration: "Tổn thương lan rộng nhanh, sốt cao, có hạch vùng hoặc bệnh nhân có bệnh nền (đái tháo đường). Cần nhập viện dùng thuốc tiêm.",
+                            duration: "7 - 10 ngày",
+                            access: [{ drug: "Cefazolin", dose: "2 g Tiêm tĩnh mạch cách 8 giờ" }],
+                            access_alt: [],
+                            watch: [{ drug: "Ceftriaxone + Clindamycin", dose: "Ceftriaxone 2g TM 1 lần/ngày + Clindamycin 600mg TM cách 8 giờ" }],
+                            reserve: [{ drug: "Vancomycin", dose: "15-20 mg/kg Tiêm TM cách 8-12 giờ\n(Chỉ định nếu đe dọa hoại tử hoặc nghi ngờ MRSA)" }]
+                        }
+                    },
+                    child: {
+                        mild: { consideration: "Theo dõi ranh giới viêm.", duration: "5 ngày", access: [{ drug: "Cefalexin", dose: "25 mg/kg/liều uống cách 12h" }], access_alt: [], watch: [], reserve: [] },
+                        severe: { consideration: "Nhập viện.", duration: "7 - 10 ngày", access: [{ drug: "Cefazolin", dose: "50 mg/kg Tiêm TM cách 8h" }], access_alt: [], watch: [{ drug: "Ceftriaxone", dose: "80 mg/kg Tiêm TM 1 lần/ngày" }], reserve: [] }
+                    }
+                },
+                "sot_thuong_han": {
+                    name: "Sốt thương hàn (Enteric Fever)", 
+                    adult: { 
+                        consideration: "Phát hiện sớm và điều trị kháng sinh giúp giảm biến chứng. Đa số vi khuẩn Salmonella typhi hiện nay kháng với Access antibiotics (Ampicillin, Chloramphenicol).", 
+                        duration: "5 - 7 ngày", 
+                        access: [], access_alt: [], 
+                        watch: [
+                            { drug: "Azithromycin", dose: "1 g uống 1 lần/ngày, trong 5 ngày" },
+                            { drug: "Ciprofloxacin", dose: "500 mg uống cách nhau 12 giờ, trong 7 ngày (Chỉ dùng nếu nhạy cảm)" },
+                            { drug: "Ceftriaxone", dose: "2 g Tiêm TM 1 lần/ngày, trong 7 ngày (Cho ca nặng)" }
+                        ], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Cần cấy máu và phân nếu có thể.", 
+                        duration: "5 - 7 ngày", 
+                        access: [], access_alt: [], 
+                        watch: [
+                            { drug: "Azithromycin", dose: "20 mg/kg/ngày uống 1 lần/ngày, trong 5 ngày" },
+                            { drug: "Ceftriaxone", dose: "80 mg/kg/ngày Tiêm TM 1 lần/ngày, trong 7 ngày" }
+                        ], reserve: [] 
+                    }
+                },
+                "benh_ta": {
+                    name: "Bệnh Tả (Cholera)", 
+                    adult: { 
+                        consideration: "BÙ DỊCH LÀ SỐ 1 (Đường uống hoặc TM). Kháng sinh chỉ hỗ trợ giảm bài xuất vi khuẩn và rút ngắn thời gian tiêu chảy.", 
+                        duration: "1 LIỀU DUY NHẤT (Single dose)", 
+                        access: [{ drug: "Doxycycline", dose: "300 mg ĐƯỜNG UỐNG, 1 LIỀU DUY NHẤT (Lựa chọn đầu tay)" }], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Azithromycin", dose: "1 g ĐƯỜNG UỐNG, 1 LIỀU DUY NHẤT (Dùng cho phụ nữ có thai)" },
+                            { drug: "Ciprofloxacin", dose: "1 g ĐƯỜNG UỐNG, 1 LIỀU DUY NHẤT" }
+                        ], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Bù dịch và bổ sung Kẽm.", 
+                        duration: "1 LIỀU DUY NHẤT", 
+                        access: [], access_alt: [], 
+                        watch: [
+                            { drug: "Azithromycin", dose: "20 mg/kg ĐƯỜNG UỐNG, 1 LIỀU DUY NHẤT" },
+                            { drug: "Ciprofloxacin", dose: "20 mg/kg ĐƯỜNG UỐNG, 1 LIỀU DUY NHẤT" }
+                        ], reserve: [] 
+                    }
+                },
+                "viem_than_be_than": {
+                    name: "Viêm thận - Bể thận cấp tính", 
+                    adult: { 
+                        consideration: "Nhiễm khuẩn tiết niệu trên. Bệnh nhân có sốt, rét run, đau hông lưng. Phác đồ ưu tiên dùng kháng sinh toàn thân.", 
+                        duration: "7 - 10 ngày (Tùy lâm sàng)", 
+                        access: [
+                            { drug: "Amoxicillin + clavulanic acid", dose: "500 mg + 125 mg uống cách nhau 8 giờ" },
+                            { drug: "Gentamicin", dose: "5 mg/kg Tiêm TM 1 lần/ngày (Dùng cho ca nội trú nặng)" }
+                        ], 
+                        access_alt: [{ drug: "Trimethoprim / Sulfamethoxazole", dose: "160/800mg uống cách 12 giờ" }], 
+                        watch: [
+                            { drug: "Ciprofloxacin", dose: "500 mg uống cách nhau 12 giờ (Trong 7 ngày)" },
+                            { drug: "Ceftriaxone", dose: "1 - 2 g Tiêm TM 1 lần/ngày (Đổi sang thuốc uống khi hết sốt)" }
+                        ], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Trẻ < 3 tháng tuổi cần nhập viện tiêm tĩnh mạch ngay.", 
+                        duration: "7 - 10 ngày", 
+                        access: [{ drug: "Amoxicillin + clavulanic acid", dose: "40-50 mg/kg/ngày (theo amox) chia 3 lần" }], 
+                        access_alt: [], 
+                        watch: [{ drug: "Ceftriaxone", dose: "50 - 80 mg/kg Tiêm TM 1 lần/ngày" }], reserve: [] 
+                    }
+                },
+                "viem_mang_nao": {
+                    name: "Viêm màng não do vi khuẩn (Cộng đồng)", 
+                    adult: { 
+                        consideration: "CẤP CỨU Y KHOA. Cần lấy dịch não tủy (DNT) nhưng không được làm chậm trễ việc tiêm kháng sinh liều đầu tiên. Có thể thêm Dexamethasone.", 
+                        duration: "10 - 14 ngày (Tùy tác nhân)", 
+                        access: [], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Ceftriaxone", dose: "2 g Tiêm TM cách nhau 12 giờ (Tổng 4g/ngày)" },
+                            { drug: "Cefotaxime", dose: "2 g Tiêm TM cách nhau 6 giờ" }
+                        ], reserve: [{ drug: "Meropenem", dose: "2 g Tiêm TM cách 8 giờ (Dùng khi nghi ngờ vi khuẩn đa kháng/bệnh viện)" }] 
+                    },
+                    child: { 
+                        consideration: "Cấp cứu y khoa. Thêm Ampicillin nếu bệnh nhi < 1 tháng tuổi để bao vây Listeria.", 
+                        duration: "10 - 14 ngày", 
+                        access: [], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Ceftriaxone", dose: "50 mg/kg Tiêm TM cách nhau 12 giờ (Hoặc 100mg/kg/ngày 1 lần)" },
+                            { drug: "Cefotaxime", dose: "50 mg/kg Tiêm TM cách nhau 6 giờ" }
+                        ], reserve: [] 
+                    }
+                },
+                "nhiem_khuan_huyet": {
+                    name: "Nhiễm khuẩn huyết / Sốc nhiễm khuẩn (Chưa rõ tiêu điểm)", 
+                    adult: { 
+                        consideration: "CẤP CỨU NỘI KHOA. Phải cấy máu TRƯỚC khi dùng kháng sinh nhưng không được làm chậm trễ việc tiêm kháng sinh (trong vòng 1 giờ). Đánh giá lại phác đồ sau 48-72h khi có kết quả cấy máu.", 
+                        duration: "Tùy thuộc tiêu điểm (Thường 7-10 ngày)", 
+                        access: [
+                            { drug: "Ampicillin + Gentamicin", dose: "Ampicillin 2g TM cách 6h + Gentamicin 5mg/kg TM 1 lần/ngày (Chỉ dùng nếu nhẹ/tiêu điểm từ đường niệu)" }
+                        ], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Ceftriaxone", dose: "2 g Tiêm tĩnh mạch 1 lần/ngày" },
+                            { drug: "Piperacillin + tazobactam", dose: "4.5 g Tiêm tĩnh mạch cách 6 giờ (Bao vây Pseudomonas)" }
+                        ], 
+                        reserve: [
+                            { drug: "Meropenem", dose: "1 g Tiêm tĩnh mạch cách 8 giờ (Dùng khi nghi ngờ vi khuẩn đa kháng ESBL)" }
+                        ] 
+                    },
+                    child: { 
+                        consideration: "Nguyên tắc tương tự người lớn. Ưu tiên Ceftriaxone cho cộng đồng, phối hợp thêm các nhóm khác tùy nguy cơ.", 
+                        duration: "7 - 10 ngày", 
+                        access: [
+                            { drug: "Ampicillin + Gentamicin", dose: "Ampicillin 50mg/kg TM cách 6h + Gentamicin 7.5mg/kg TM 1 lần/ngày" }
+                        ], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Ceftriaxone", dose: "80 mg/kg Tiêm tĩnh mạch 1 lần/ngày" }
+                        ], reserve: [] 
+                    }
+                },
+                "benh_lau": {
+                    name: "Bệnh Lậu (Gonorrhoea)", 
+                    adult: { 
+                        consideration: "Bệnh lây truyền qua tình dục (STI). Luôn điều trị đồng thời cả Chlamydia (vì thường đồng nhiễm) và phải thông báo điều trị cho cả bạn tình.", 
+                        duration: "1 LIỀU DUY NHẤT", 
+                        access: [], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Ceftriaxone + Azithromycin", dose: "Ceftriaxone 500 mg TIÊM BẮP (1 liều duy nhất)\nKèm theo: Azithromycin 1 g ĐƯỜNG UỐNG (1 liều duy nhất)" },
+                            { drug: "Cefixime + Azithromycin", dose: "Cefixime 400 mg uống (1 liều) + Azithromycin 1g uống (1 liều)\n(Chỉ dùng khi không thể tiêm bắp Ceftriaxone)" }
+                        ], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Trẻ sơ sinh có nguy cơ viêm kết mạc mủ do lậu cầu từ mẹ. Trẻ lớn bị lậu cần cảnh giác nguy cơ lạm dụng tình dục.", 
+                        duration: "1 LIỀU DUY NHẤT", 
+                        access: [], access_alt: [], 
+                        watch: [{ drug: "Ceftriaxone", dose: "25 - 50 mg/kg TIÊM BẮP (1 liều duy nhất, max 250mg)" }], reserve: [] 
+                    }
+                },
+                "choc_lo": {
+                    name: "Chốc lở (Impetigo)", 
+                    adult: { 
+                        consideration: "Nhiễm khuẩn da nông do Tụ cầu hoặc Liên cầu. Tổn thương đóng vảy mật ong. Nếu chỉ bị ít (<5 nốt), chỉ cần bôi mỡ kháng sinh tại chỗ.", 
+                        duration: "5 ngày (Đối với kháng sinh uống)", 
+                        access: [
+                            { drug: "Mupirocin (Kem/Mỡ bôi da)", dose: "Bôi tại chỗ 3 lần/ngày, trong 5 ngày" },
+                            { drug: "Cefalexin", dose: "500 mg uống cách nhau 8 giờ (Dùng khi tổn thương lan rộng)" }
+                        ], 
+                        access_alt: [{ drug: "Amoxicillin + clavulanic acid", dose: "500/125 mg uống cách 8 giờ" }], 
+                        watch: [], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Giữ vệ sinh da, cắt ngắn móng tay cho trẻ để tránh cào gãi lây lan.", 
+                        duration: "5 ngày", 
+                        access: [
+                            { drug: "Mupirocin (Kem/Mỡ bôi da)", dose: "Bôi tại chỗ 3 lần/ngày, trong 5 ngày" },
+                            { drug: "Cefalexin", dose: "25 mg/kg/liều uống cách 12 giờ" }
+                        ], 
+                        access_alt: [], 
+                        watch: [], reserve: [] 
+                    }
+                },
+                "nhiem_khuan_o_bung": {
+                    name: "Nhiễm khuẩn ổ bụng mắc phải cộng đồng", 
+                    adult: { 
+                        consideration: "Bao gồm viêm ruột thừa, viêm túi mật, viêm túi thừa... Thường là nhiễm khuẩn đa ổ (Gram âm và Yếm khí). Kiểm soát nguồn nhiễm (phẫu thuật/dẫn lưu) là quan trọng nhất.", 
+                        duration: "5 - 7 ngày", 
+                        access: [
+                            { drug: "Amoxicillin + clavulanic acid", dose: "1 g + 200 mg Tiêm TM cách nhau 8 giờ\n(Hoặc 875/125mg uống nếu bệnh nhẹ)" }
+                        ], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Ceftriaxone + Metronidazole", dose: "Ceftriaxone 2 g Tiêm TM 1 lần/ngày\nKèm: Metronidazole 500 mg Tiêm TM/Uống cách 8 giờ" }
+                        ], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Xác định rõ chỉ định ngoại khoa. Chỉ dùng kháng sinh đơn thuần cho các ca nhẹ hoặc viêm ruột thừa chưa biến chứng (tùy phác đồ ngoại khoa).", 
+                        duration: "5 - 7 ngày", 
+                        access: [{ drug: "Amoxicillin + clavulanic acid", dose: "40-50 mg/kg/liều Tiêm TM cách nhau 8 giờ" }], 
+                        access_alt: [], 
+                        watch: [{ drug: "Ceftriaxone + Metronidazole", dose: "Ceftriaxone 80 mg/kg TM 1 lần/ngày\nKèm: Metronidazole 10 mg/kg TM/Uống cách 8 giờ" }], reserve: [] 
+                    }
+                },
+                "nhiem_c_difficile": {
+                    name: "Nhiễm Clostridioides difficile", 
+                    adult: { 
+                        consideration: "Viêm đại tràng giả mạc. Ngừng ngay các kháng sinh đang dùng nếu có thể. KHÔNG dùng thuốc chống tiêu chảy.", 
+                        duration: "10 ngày", 
+                        access: [
+                            { drug: "Metronidazole (Uống)", dose: "500 mg ĐƯỜNG UỐNG cách nhau 8 giờ\n(Chỉ dùng cho đợt nhiễm đầu tiên, mức độ nhẹ-vừa)" }
+                        ], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Vancomycin (Uống)", dose: "125 mg ĐƯỜNG UỐNG cách nhau 6 giờ\n(Ưu tiên cho ca nặng hoặc tái phát)" }
+                        ], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Tương tự người lớn. Đảm bảo bù nước và điện giải.", 
+                        duration: "10 ngày", 
+                        access: [{ drug: "Metronidazole (Uống)", dose: "7.5 mg/kg ĐƯỜNG UỐNG cách nhau 8 giờ (Max 500mg/liều)" }], 
+                        access_alt: [], 
+                        watch: [{ drug: "Vancomycin (Uống)", dose: "10 mg/kg ĐƯỜNG UỐNG cách nhau 6 giờ (Max 125mg/liều)" }], reserve: [] 
+                    }
+                },
+                "viem_nieu_dao": {
+                    name: "Viêm niệu đạo / Viêm cổ tử cung", 
+                    adult: { 
+                        consideration: "Tập trung vào Chlamydia trachomatis. Nếu nghi ngờ hoặc chưa loại trừ được Lậu, phải điều trị phối hợp cả Lậu (Ceftriaxone) và Chlamydia. Điều trị cho cả bạn tình.", 
+                        duration: "7 ngày (Doxycycline) hoặc 1 liều (Azithromycin)", 
+                        access: [
+                            { drug: "Doxycycline", dose: "100 mg ĐƯỜNG UỐNG cách nhau 12 giờ, trong 7 ngày\n(Lựa chọn đầu tay theo WHO 2023)" }
+                        ], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Azithromycin", dose: "1 g ĐƯỜNG UỐNG, 1 Liều duy nhất\n(Dùng cho phụ nữ có thai hoặc không tuân thủ được phác đồ 7 ngày)" }
+                        ], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Thường gặp ở tuổi vị thành niên. Cần tư vấn an toàn tình dục.", 
+                        duration: "7 ngày", 
+                        access: [{ drug: "Doxycycline", dose: "100 mg ĐƯỜNG UỐNG cách nhau 12 giờ, trong 7 ngày (Trẻ > 8 tuổi)" }], 
+                        access_alt: [], 
+                        watch: [{ drug: "Azithromycin", dose: "20 mg/kg (Max 1g) ĐƯỜNG UỐNG, 1 Liều duy nhất" }], reserve: [] 
+                    }
+                },
+                "giang_mai": {
+                    name: "Giang mai (Syphilis)", 
+                    adult: { 
+                        consideration: "Theo dõi phản ứng Jarisch-Herxheimer (sốt, đau đầu, đau cơ) trong 24h đầu sau tiêm. Không cần chuyển kháng sinh khác.", 
+                        duration: "1 Liều (Giang mai sớm) hoặc 3 Tuần (Giang mai muộn/tiềm ẩn)", 
+                        access: [
+                            { drug: "Benzathine benzylpenicillin", dose: "Giang mai sớm (Sơ cấp, thứ cấp, tiềm ẩn <1 năm): 2.4 triệu IU TIÊM BẮP (1 liều duy nhất)\n\nGiang mai muộn (>1 năm): 2.4 triệu IU TIÊM BẮP mỗi tuần x 3 tuần liên tiếp" }
+                        ], 
+                        access_alt: [
+                            { drug: "Doxycycline", dose: "100 mg uống cách 12 giờ x 14 ngày (sớm) hoặc 28 ngày (muộn).\n(Chỉ dùng khi dị ứng Penicillin nghiêm trọng)" }
+                        ], 
+                        watch: [], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Giang mai bẩm sinh cần đánh giá kỹ dịch não tủy và dùng Benzylpenicillin tiêm TM. Liều dưới đây dành cho trẻ mắc giang mai mắc phải (sớm).", 
+                        duration: "1 Liều duy nhất", 
+                        access: [{ drug: "Benzathine benzylpenicillin", dose: "50.000 IU/kg (Max 2.4 triệu IU) TIÊM BẮP sâu, 1 liều duy nhất" }], 
+                        access_alt: [], 
+                        watch: [], reserve: [] 
+                    }
+                },
+                "sot_mo": {
+                    name: "Sốt mò (Scrub typhus)", 
+                    adult: { 
+                        consideration: "Bệnh do Orientia tsutsugamushi (rickettsia) lây qua ấu trùng mò. Tìm vết loét (eschar) đặc trưng. Không đợi kết quả xét nghiệm để bắt đầu kháng sinh.", 
+                        duration: "7 ngày", 
+                        access: [
+                            { drug: "Doxycycline", dose: "100 mg ĐƯỜNG UỐNG cách nhau 12 giờ, trong 7 ngày\n(Kháng sinh đặc hiệu, hiệu quả cao nhất)" }
+                        ], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Azithromycin", dose: "500 mg ĐƯỜNG UỐNG 1 lần/ngày, trong 3-5 ngày\n(Lựa chọn tốt cho phụ nữ có thai hoặc vùng kháng Doxycycline)" }
+                        ], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Doxycycline được WHO cho phép dùng ngắn ngày ở trẻ em mọi lứa tuổi cho bệnh Rickettsia nặng (lợi ích vượt trội nguy cơ hỏng men răng).", 
+                        duration: "7 ngày", 
+                        access: [{ drug: "Doxycycline", dose: "2.2 mg/kg/liều (Max 100mg) ĐƯỜNG UỐNG cách 12 giờ" }], 
+                        access_alt: [], 
+                        watch: [{ drug: "Azithromycin", dose: "10 mg/kg/ngày ĐƯỜNG UỐNG 1 lần/ngày, trong 3-5 ngày" }], reserve: [] 
+                    }
+                },
+                "hap": {
+                    name: "Viêm phổi bệnh viện (HAP)", 
+                    adult: { 
+                        consideration: "Xảy ra ≥ 48 giờ sau khi nhập viện. Cần đánh giá nguy cơ nhiễm vi khuẩn đa kháng (Pseudomonas, MRSA) dựa trên dịch tễ khoa phòng. Ưu tiên cấy đờm/máu trước khi dùng kháng sinh.", 
+                        duration: "7 ngày (Có thể dài hơn nếu do Pseudomonas/Acinetobacter)", 
+                        access: [
+                            { drug: "Amoxicillin + clavulanic acid", dose: "1.2 g Tiêm TM cách nhau 8 giờ\n(Chỉ dùng cho HAP khởi phát sớm, nguy cơ đa kháng thấp)" }
+                        ], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Ceftriaxone", dose: "2 g Tiêm TM 1 lần/ngày (Nguy cơ thấp)" },
+                            { drug: "Piperacillin + tazobactam", dose: "4.5 g Tiêm TM cách nhau 6 giờ\n(Bao vây Pseudomonas aeruginosa)" }
+                        ], reserve: [
+                            { drug: "Meropenem", dose: "1 g Tiêm TM cách nhau 8 giờ\n(Dùng khi bệnh rất nặng hoặc có bằng chứng sinh ESBL)" }
+                        ] 
+                    },
+                    child: { 
+                        consideration: "Đánh giá nguy cơ tương tự người lớn.", 
+                        duration: "7 ngày", 
+                        access: [{ drug: "Amoxicillin + clavulanic acid", dose: "40-50 mg/kg/liều Tiêm TM cách nhau 8 giờ" }], 
+                        access_alt: [], 
+                        watch: [{ drug: "Ceftriaxone", dose: "80 mg/kg Tiêm TM 1 lần/ngày" }, { drug: "Piperacillin + tazobactam", dose: "100 mg/kg (theo piperacillin) TM cách 8 giờ" }], reserve: [] 
+                    }
+                },
+                "vet_thuong_can": {
+                    name: "Vết thương do động vật / người cắn", 
+                    adult: { 
+                        consideration: "Bao gồm chó, mèo, người cắn. Phải rửa sạch vết thương dưới vòi nước 15 phút. Đánh giá chỉ định tiêm phòng Dại (Rabies) và Uốn ván (Tetanus). Kháng sinh dự phòng/điều trị chủ yếu nhắm vào Pasteurella và vi khuẩn yếm khí.", 
+                        duration: "3 - 5 ngày (Dự phòng) hoặc 5 - 10 ngày (Điều trị nhiễm khuẩn)", 
+                        access: [
+                            { drug: "Amoxicillin + clavulanic acid", dose: "500/125 mg ĐƯỜNG UỐNG cách nhau 8 giờ\n(Lựa chọn ĐẦU TAY và DUY NHẤT được WHO khuyến cáo rộng rãi)" }
+                        ], 
+                        access_alt: [
+                            { drug: "Doxycycline + Metronidazole", dose: "Doxycycline 100mg uống cách 12h + Metronidazole 500mg uống cách 8h\n(Dùng khi bệnh nhân dị ứng Penicillin)" }
+                        ], 
+                        watch: [], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Rửa sạch vết thương. Tiêm phòng Dại/Uốn ván là bắt buộc tùy phân độ.", 
+                        duration: "3 - 5 ngày (Dự phòng)", 
+                        access: [{ drug: "Amoxicillin + clavulanic acid", dose: "40-50 mg/kg/ngày (theo amoxicillin) chia 2-3 lần ĐƯỜNG UỐNG" }], 
+                        access_alt: [], 
+                        watch: [], reserve: [] 
+                    }
+                },
+                "viem_khop_xuong": {
+                    name: "Viêm xương tủy / Viêm khớp nhiễm khuẩn", 
+                    adult: { 
+                        consideration: "Thường do Tụ cầu vàng (S. aureus). Cần chọc hút dịch khớp xét nghiệm/cấy trước khi dùng kháng sinh. Cân nhắc phẫu thuật dẫn lưu mủ.", 
+                        duration: "2 - 3 tuần (Viêm khớp) hoặc 4 - 6 tuần (Viêm xương tủy)", 
+                        access: [
+                            { drug: "Cefazolin", dose: "2 g Tiêm TM cách nhau 8 giờ\n(Rất hiệu quả với Tụ cầu nhạy methicillin - MSSA)" },
+                            { drug: "Cefalexin", dose: "1 g ĐƯỜNG UỐNG cách nhau 6 - 8 giờ\n(Dùng để điều trị duy trì sau khi đã kiểm soát bằng tiêm)" }
+                        ], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Ceftriaxone", dose: "2 g Tiêm TM 1 lần/ngày (Dùng nếu nghi ngờ vi khuẩn Gram âm)" }
+                        ], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Thường gặp ở xương dài. Trẻ đau, hạn chế vận động chi.", 
+                        duration: "3 - 4 tuần", 
+                        access: [{ drug: "Cefazolin", dose: "50 mg/kg Tiêm TM cách nhau 8 giờ" }, { drug: "Cefalexin", dose: "33 mg/kg ĐƯỜNG UỐNG cách nhau 8 giờ (Duy trì)" }], 
+                        access_alt: [], 
+                        watch: [{ drug: "Ceftriaxone", dose: "50 - 80 mg/kg Tiêm TM 1 lần/ngày" }], reserve: [] 
+                    }
+                },
+                "trichomonas": {
+                    name: "Nhiễm trùng roi Trichomonas", 
+                    adult: { 
+                        consideration: "Viêm âm đạo/niệu đạo do ký sinh trùng Trichomonas vaginalis. Khí hư màu xanh/vàng, có bọt, ngứa nhiều. BẮT BUỘC ĐIỀU TRỊ CHO BẠN TÌNH dù không có triệu chứng.", 
+                        duration: "1 Liều duy nhất hoặc 7 ngày", 
+                        access: [
+                            { drug: "Metronidazole", dose: "2 g ĐƯỜNG UỐNG, 1 LIỀU DUY NHẤT\n(Hoặc 500 mg uống cách 12 giờ trong 7 ngày nếu không dung nạp liều cao)" }
+                        ], 
+                        access_alt: [], 
+                        watch: [], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Rất hiếm gặp ở trẻ chưa hoạt động tình dục. Cần cảnh giác lạm dụng tình dục.", 
+                        duration: "1 Liều", 
+                        access: [{ drug: "Metronidazole", dose: "30 mg/kg (Max 2g) ĐƯỜNG UỐNG, 1 Liều duy nhất" }], 
+                        access_alt: [], 
+                        watch: [], reserve: [] 
+                    }
+                },
+                "ho_ga": {
+                    name: "Ho gà (Pertussis)", 
+                    adult: { 
+                        consideration: "Kháng sinh chủ yếu có tác dụng loại trừ vi khuẩn B. pertussis khỏi dịch tiết mũi họng để NGĂN CHẶN LÂY TRUYỀN, ít làm giảm triệu chứng ho nếu dùng muộn (sau pha xuất tiết).", 
+                        duration: "5 ngày (Azithromycin) hoặc 7 ngày (Clarithromycin)", 
+                        access: [
+                            { drug: "Trimethoprim / Sulfamethoxazole", dose: "160/800mg uống cách 12 giờ, trong 14 ngày\n(Dùng khi chống chỉ định/dị ứng với Macrolid)" }
+                        ], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Azithromycin", dose: "500 mg ngày 1, sau đó 250 mg/ngày từ ngày 2-5, ĐƯỜNG UỐNG" },
+                            { drug: "Clarithromycin", dose: "500 mg ĐƯỜNG UỐNG cách nhau 12 giờ, trong 7 ngày" }
+                        ], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Trẻ nhũ nhi < 6 tháng tuổi mắc ho gà có nguy cơ tử vong cao (cơn ngừng thở, viêm phổi). Cần dự phòng cho người tiếp xúc.", 
+                        duration: "5 ngày", 
+                        access: [], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Azithromycin", dose: "10 mg/kg/ngày ĐƯỜNG UỐNG 1 lần/ngày, trong 5 ngày\n(Trẻ <6 tháng: 10 mg/kg/ngày)" },
+                            { drug: "Clarithromycin", dose: "7.5 mg/kg ĐƯỜNG UỐNG cách nhau 12 giờ, trong 7 ngày (Không dùng cho trẻ <1 tháng tuổi)" }
+                        ], reserve: [] 
+                    }
+                },
+                "viem_vung_chau": {
+                    name: "Viêm vùng chậu (PID)", 
+                    adult: { 
+                        consideration: "Bệnh lý phụ khoa ở nữ giới. Thường do đồng nhiễm Lậu cầu (N. gonorrhoeae), Chlamydia và vi khuẩn yếm khí âm đạo. Cần điều trị bao vây cả 3 tác nhân này. Bắt buộc điều trị cho bạn tình.", 
+                        duration: "14 ngày", 
+                        access: [], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Phác đồ phối hợp 3 thuốc (Ceftriaxone + Doxycycline + Metronidazole)", dose: "1. Ceftriaxone 500 mg TIÊM BẮP (1 liều duy nhất)\n2. Doxycycline 100 mg uống cách 12 giờ (14 ngày)\n3. Metronidazole 500 mg uống cách 12 giờ (14 ngày)" }
+                        ], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Thường gặp ở tuổi vị thành niên có hoạt động tình dục. Không dùng Doxycycline cho trẻ < 8 tuổi.", 
+                        duration: "14 ngày", 
+                        access: [], access_alt: [], 
+                        watch: [{ drug: "Phác đồ phối hợp 3 thuốc (Ceftriaxone + Doxycycline + Metronidazole)", dose: "Sử dụng liều tương tự người lớn cho thanh thiếu niên." }], reserve: [] 
+                    }
+                },
+                "h_pylori": {
+                    name: "Nhiễm Helicobacter pylori (H. pylori)", 
+                    adult: { 
+                        consideration: "Nguyên nhân chính gây viêm loét dạ dày. Điều trị dựa trên tình hình kháng Clarithromycin tại địa phương. Bắt buộc phối hợp với thuốc ức chế tiết axit (PPI) liều cao chia 2 lần/ngày.", 
+                        duration: "14 ngày", 
+                        access: [
+                            { drug: "Amoxicillin + Metronidazole + PPI", dose: "Amoxicillin 1g uống cách 12h + Metronidazole 500mg uống cách 8h-12h + PPI.\n(Dùng ở vùng có tỷ lệ kháng Clarithromycin cao)" }
+                        ], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Amoxicillin + Clarithromycin + PPI (Phác đồ chuẩn 3 thuốc)", dose: "Amoxicillin 1g uống cách 12h + Clarithromycin 500mg uống cách 12h + PPI." }
+                        ], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Chỉ xét nghiệm và điều trị H. pylori ở trẻ em khi có loét dạ dày tá tràng thực sự (qua nội soi).", 
+                        duration: "14 ngày", 
+                        access: [{ drug: "Amoxicillin + Metronidazole + PPI", dose: "Amoxicillin 50 mg/kg/ngày chia 2 lần + Metronidazole 20 mg/kg/ngày chia 2 lần + PPI." }], 
+                        access_alt: [], 
+                        watch: [{ drug: "Amoxicillin + Clarithromycin + PPI", dose: "Amoxicillin 50 mg/kg/ngày chia 2 lần + Clarithromycin 15-20 mg/kg/ngày chia 2 lần + PPI." }], reserve: [] 
+                    }
+                },
+                "leptospira": {
+                    name: "Bệnh Leptospira (Xoắn khuẩn vàng da)", 
+                    adult: { 
+                        consideration: "Bệnh lây truyền từ động vật (nước tiểu chuột, gia súc). Biểu hiện sốt, đau cơ (đặc biệt cơ bắp chân), vàng da. Thể nhẹ điều trị ngoại trú, thể nặng (Hội chứng Weil) cần nhập viện.", 
+                        duration: "7 ngày", 
+                        access: [
+                            { drug: "Doxycycline", dose: "100 mg ĐƯỜNG UỐNG cách 12 giờ (Dành cho thể nhẹ/ngoại trú)" }
+                        ], 
+                        access_alt: [
+                            { drug: "Amoxicillin", dose: "500 mg ĐƯỜNG UỐNG cách 8 giờ (Dành cho phụ nữ có thai)" }
+                        ], 
+                        watch: [
+                            { drug: "Ceftriaxone", dose: "1 g Tiêm TM 1 lần/ngày (Dành cho thể nặng/nhập viện)" },
+                            { drug: "Azithromycin", dose: "500 mg uống 1 lần/ngày x 3 ngày (Thay thế Doxycycline)" }
+                        ], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Theo dõi sát chức năng gan, thận.", 
+                        duration: "7 ngày", 
+                        access: [{ drug: "Amoxicillin", dose: "50 mg/kg/ngày chia 3 lần uống" }, { drug: "Doxycycline", dose: "2.2 mg/kg/liều uống cách 12 giờ (Trẻ mọi lứa tuổi theo WHO)" }], 
+                        access_alt: [], 
+                        watch: [{ drug: "Ceftriaxone", dose: "80 mg/kg Tiêm TM 1 lần/ngày (Thể nặng)" }], reserve: [] 
+                    }
+                },
+                "nhiem_khuan_rang_mieng": {
+                    name: "Nhiễm khuẩn răng miệng / Áp xe răng", 
+                    adult: { 
+                        consideration: "Bao gồm viêm nha chu, áp xe quanh chóp, viêm lợi hoại tử. Can thiệp nha khoa (dẫn lưu mủ, nhổ răng) là phương pháp chính. Chỉ dùng kháng sinh khi có sưng lan rộng, sốt hoặc hạch vùng.", 
+                        duration: "3 - 5 ngày (Ngừng kháng sinh sau khi hết triệu chứng 24h)", 
+                        access: [
+                            { drug: "Amoxicillin", dose: "500 mg ĐƯỜNG UỐNG cách 8 giờ" },
+                            { drug: "Amoxicillin + Metronidazole", dose: "Amoxicillin 500mg cách 8h + Metronidazole 500mg cách 8h\n(Phối hợp khi nhiễm khuẩn nặng, áp xe lớn)" }
+                        ], 
+                        access_alt: [
+                            { drug: "Amoxicillin + clavulanic acid", dose: "500/125 mg ĐƯỜNG UỐNG cách 8 giờ" }
+                        ], 
+                        watch: [
+                            { drug: "Azithromycin", dose: "500 mg ngày 1, sau đó 250mg/ngày (Nếu dị ứng Penicillin)" }
+                        ], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Thường do sâu răng không được điều trị. Giữ vệ sinh răng miệng tốt.", 
+                        duration: "3 - 5 ngày", 
+                        access: [{ drug: "Amoxicillin", dose: "50 mg/kg/ngày chia 2-3 lần uống" }], 
+                        access_alt: [{ drug: "Amoxicillin + Metronidazole", dose: "Dùng cho áp xe nặng. Metronidazole: 20-30 mg/kg/ngày chia 3 lần." }], 
+                        watch: [], reserve: [] 
+                    }
+                },
+                "viem_noi_tam_mac": {
+                    name: "Viêm nội tâm mạc nhiễm khuẩn (IE)", 
+                    adult: { 
+                        consideration: "BỆNH LÝ NẶNG, NGƯY CƠ TỬ VONG CAO. Bắt buộc cấy máu (ít nhất 3 mẫu) TRƯỚC khi dùng kháng sinh. Cần siêu âm tim. Phác đồ kinh nghiệm thường nhắm vào Tụ cầu, Liên cầu và Enterococcus.", 
+                        duration: "4 - 6 tuần (Đường tĩnh mạch hoàn toàn)", 
+                        access: [
+                            { drug: "Ampicillin + Gentamicin", dose: "Dùng để bao vây Enterococcus.\nAmpicillin 2g TM cách 4h + Gentamicin 3mg/kg/ngày TM chia 1-3 lần" }
+                        ], 
+                        access_alt: [
+                            { drug: "Cefazolin", dose: "2 g Tiêm TM cách 8 giờ (Dùng nếu do Tụ cầu MSSA)" }
+                        ], 
+                        watch: [
+                            { drug: "Ceftriaxone", dose: "2 g Tiêm TM 1 lần/ngày (Rất tốt cho Liên cầu nhạy cảm)" }
+                        ], reserve: [
+                            { drug: "Vancomycin", dose: "15 - 20 mg/kg Tiêm TM cách 8 - 12 giờ\n(BẮT BUỘC dùng nếu nghi ngờ MRSA hoặc bệnh nhân mang van tim nhân tạo)" }
+                        ] 
+                    },
+                    child: { 
+                        consideration: "Cấp cứu chuyên khoa nhi/tim mạch.", 
+                        duration: "4 - 6 tuần", 
+                        access: [{ drug: "Ampicillin + Gentamicin", dose: "Ampicillin 200-300 mg/kg/ngày chia 4-6 lần + Gentamicin 3 mg/kg/ngày" }], 
+                        access_alt: [{ drug: "Cefazolin", dose: "100 mg/kg/ngày chia 3-4 lần" }], 
+                        watch: [{ drug: "Ceftriaxone", dose: "80-100 mg/kg/ngày Tiêm TM 1 lần/ngày" }], reserve: [{ drug: "Vancomycin", dose: "40 - 60 mg/kg/ngày Tiêm TM chia 3-4 lần" }] 
+                    }
+                },
+                "sot_giam_bach_cau": {
+                    name: "Sốt giảm bạch cầu hạt (Febrile Neutropenia)", 
+                    adult: { 
+                        consideration: "CẤP CỨU NỘI KHOA (Thường gặp ở bệnh nhân hóa trị ung thư có ANC < 500/mm3). Bắt buộc cấy máu và dùng kháng sinh phổ rộng đường tĩnh mạch TRONG VÒNG 1 GIỜ kể từ khi sốt. Kháng sinh phải bao vây được trực khuẩn mủ xanh (P. aeruginosa).", 
+                        duration: "Cho đến khi hết sốt 48h và ANC > 500/mm3", 
+                        access: [], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Piperacillin + tazobactam", dose: "4.5 g Tiêm TM cách nhau 6 - 8 giờ" },
+                            { drug: "Cefepime hoặc Ceftazidime", dose: "2 g Tiêm TM cách nhau 8 giờ\n(Lựa chọn thay thế nếu dị ứng Penicillin)" }
+                        ], reserve: [
+                            { drug: "Meropenem", dose: "1 g Tiêm TM cách 8 giờ (Dùng nếu bệnh nhân có sốc/huyết động không ổn định hoặc nghi ngờ ESBL)" }
+                        ] 
+                    },
+                    child: { 
+                        consideration: "Tương tự người lớn. Cấp cứu nhi khoa.", 
+                        duration: "Cho đến khi ANC phục hồi", 
+                        access: [], access_alt: [], 
+                        watch: [
+                            { drug: "Piperacillin + tazobactam", dose: "90 mg/kg (theo piperacillin) TM cách 6 - 8 giờ" },
+                            { drug: "Cefepime", dose: "50 mg/kg TM cách 8 giờ" }
+                        ], reserve: [] 
+                    }
+                },
+                "nhiem_khuan_huyet_so_sinh": {
+                    name: "Nhiễm khuẩn huyết sơ sinh (Neonatal Sepsis)", 
+                    adult: { 
+                        consideration: "Bệnh lý này chỉ áp dụng cho trẻ sơ sinh (< 28 ngày tuổi). Vui lòng chọn đối tượng Trẻ em.", 
+                        duration: "Không áp dụng", 
+                        access: [], access_alt: [], watch: [], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Trẻ < 28 ngày tuổi. Lấy máu cấy, DNT (nếu có thể) và bắt đầu tiêm kháng sinh ngay lập tức. Phân biệt nhiễm khuẩn khởi phát sớm (≤ 72h) và muộn (> 72h).", 
+                        duration: "7 - 10 ngày (Có thể tới 14-21 ngày nếu có viêm màng não)", 
+                        access: [
+                            { drug: "Ampicillin + Gentamicin (Phác đồ chuẩn)", dose: "Ampicillin 50 mg/kg Tiêm TM mỗi 12h (nếu trẻ < 7 ngày tuổi) hoặc mỗi 8h (nếu > 7 ngày tuổi).\nKèm: Gentamicin 5 mg/kg Tiêm TM 1 lần/ngày." }
+                        ], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Cefotaxime", dose: "50 mg/kg Tiêm TM cách 12h (hoặc 8h)\n(Được thêm vào hoặc thay thế nếu NGHI NGỜ VIÊM MÀNG NÃO. Tránh dùng Ceftriaxone cho sơ sinh vì nguy cơ vàng da nhân)" }
+                        ], reserve: [] 
+                    }
+                },
+                "viem_tuyen_tien_liet": {
+                    name: "Viêm tuyến tiền liệt cấp tính", 
+                    adult: { 
+                        consideration: "Nam giới đau vùng chậu/tầng sinh môn, tiểu buốt, sốt. Thăm khám trực tràng thấy tuyến tiền liệt to, rất đau (chú ý xoa nắn nhẹ nhàng tránh gây nhiễm khuẩn huyết). Cấy nước tiểu giữa dòng.", 
+                        duration: "2 - 4 tuần (Phải điều trị dài ngày để thuốc ngấm vào mô tuyến)", 
+                        access: [
+                            { drug: "Trimethoprim / Sulfamethoxazole", dose: "160/800 mg ĐƯỜNG UỐNG cách 12 giờ\n(Chỉ dùng nếu biết rõ vi khuẩn nhạy cảm)" }
+                        ], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Ciprofloxacin hoặc Levofloxacin", dose: "Ciprofloxacin 500 mg uống cách 12 giờ (Hoặc Levofloxacin 500mg uống 1 lần/ngày)\n(Thuốc ngấm rất tốt vào tuyến tiền liệt, là lựa chọn ưu tiên trên lâm sàng)" },
+                            { drug: "Ceftriaxone", dose: "1 - 2 g Tiêm TM 1 lần/ngày\n(Dùng khởi đầu nếu bệnh nhân sốt cao/nhiễm độc, sau đó chuyển sang thuốc uống)" }
+                        ], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Bệnh lý này cực kỳ hiếm gặp ở trẻ em chưa dậy thì. Nếu có triệu chứng tiểu buốt, hãy ưu tiên tra cứu 'Viêm bàng quang' hoặc 'Viêm thận bể thận'.", 
+                        duration: "-", 
+                        access: [], access_alt: [], watch: [], reserve: [] 
+                    }
+                },
+                "brucella": {
+                    name: "Bệnh Brucella (Sốt lượn sóng)", 
+                    adult: { 
+                        consideration: "Lây từ gia súc (bò, cừu, dê) hoặc uống sữa chưa tiệt trùng. Triệu chứng kéo dài: sốt lượn sóng, vã mồ hôi đêm, đau khớp. BẮT BUỘC dùng phác đồ phối hợp để tránh tái phát.", 
+                        duration: "6 tuần (Tối thiểu)", 
+                        access: [
+                            { drug: "Doxycycline + Rifampicin", dose: "Doxycycline 100 mg uống cách 12 giờ (trong 6 tuần)\nKèm: Rifampicin 600 - 900 mg uống 1 lần/ngày (trong 6 tuần)" }
+                        ], 
+                        access_alt: [
+                            { drug: "Doxycycline + Streptomycin", dose: "Doxycycline 100 mg uống cách 12h (6 tuần)\nKèm: Streptomycin 1g Tiêm bắp 1 lần/ngày (Chỉ tiêm trong 2-3 tuần đầu)" }
+                        ], 
+                        watch: [], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Tránh dùng Doxycycline cho trẻ < 8 tuổi nếu có thể thay thế.", 
+                        duration: "6 tuần", 
+                        access: [
+                            { drug: "Trimethoprim/Sulfamethoxazole + Rifampicin", dose: "Dùng phối hợp TMP/SMX và Rifampicin trong 6 tuần (Lựa chọn ưu tiên cho trẻ < 8 tuổi)." }
+                        ], 
+                        access_alt: [], 
+                        watch: [], reserve: [] 
+                    }
+                },
+                "viem_ket_mac": {
+                    name: "Viêm kết mạc cấp do vi khuẩn", 
+                    adult: { 
+                        consideration: "Mắt đỏ, nhiều ghèn mủ dính chặt mi mắt buổi sáng. Nếu chỉ cộm xốn, chảy nước mắt trong thì thường do virus (không cần KS). Phải rửa sạch mắt bằng Nước muối sinh lý trước khi tra thuốc.", 
+                        duration: "5 - 7 ngày", 
+                        access: [
+                            { drug: "Tetracycline 1% (Thuốc mỡ tra mắt)", dose: "Tra một dải mỏng vào cùng đồ kết mạc dưới, 3 - 4 lần/ngày\n(Thuốc lưu lại lâu nhưng gây mờ mắt tạm thời, thích hợp tra trước khi ngủ)" },
+                            { drug: "Chloramphenicol 0.4% (Thuốc nhỏ mắt)", dose: "Nhỏ 1 - 2 giọt vào mắt bệnh, mỗi 2 - 4 giờ trong 2 ngày đầu, sau đó giảm còn 4 lần/ngày" }
+                        ], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Ciprofloxacin 0.3% (Thuốc nhỏ mắt)", dose: "Nhỏ 1-2 giọt mỗi 2-4 giờ. Dùng khi viêm nặng hoặc nghi ngờ do Pseudomonas (ở người đeo kính áp tròng)." }
+                        ], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Với trẻ sơ sinh (< 1 tháng) bị viêm kết mạc mủ nhiều, phải loại trừ Viêm kết mạc do Lậu cầu (Cấp cứu nhãn khoa, cần tiêm Ceftriaxone toàn thân).", 
+                        duration: "5 - 7 ngày", 
+                        access: [
+                            { drug: "Erythromycin 0.5% (Thuốc mỡ) hoặc Chloramphenicol 0.4% (Thuốc nhỏ)", dose: "Tra/nhỏ 3-4 lần/ngày. Rửa sạch ghèn trước khi dùng." }
+                        ], 
+                        access_alt: [], 
+                        watch: [], reserve: [] 
+                    }
+                    },
+                    "ban_chan_dai_thao_duong": {
+                        name: "Nhiễm khuẩn bàn chân đái tháo đường", adult: { consideration: "Đánh giá mức độ tưới máu và thần kinh ngoại biên. Cắt lọc mô hoại tử là cốt lõi. Kháng sinh bao vây vi khuẩn Gram (+), Gram (-) và yếm khí.", duration: "1 - 2 tuần (Nhẹ) đến 3 - 4 tuần (Nặng/Viêm xương)", access: [{ drug: "Amoxicillin + clavulanic acid", dose: "1 g + 200 mg Tiêm TM cách 8h (Hoặc 875/125mg uống cách 8h)" }], access_alt: [{ drug: "Cefalexin + Metronidazole", dose: "Cefalexin 500mg uống cách 8h + Metronidazole 500mg uống cách 8h (Mức độ nhẹ)" }], watch: [{ drug: "Ceftriaxone + Metronidazole", dose: "Ceftriaxone 2g TM 1 lần/ngày + Metronidazole 500mg TM cách 8h" }, { drug: "Piperacillin + tazobactam", dose: "4.5 g TM cách 6h (Mức độ rất nặng, đe dọa đoạn chi)" }], reserve: [] },
+                        child: { consideration: "Cực kỳ hiếm gặp ở trẻ em. Vui lòng chọn đối tượng Người lớn.", duration: "-", access: [], access_alt: [], watch: [], reserve: [] }
+                    },
+                    "viem_can_mac_hoai_tu": {
+                        name: "Viêm cân mạc hoại tử (Necrotizing Fasciitis)", adult: { consideration: "CẤP CỨU NGOẠI KHOA KHẨN CẤP. Tiến triển nhanh, đe dọa tính mạng. Bắt buộc MỞ CÂN CẮT LỌC SỚM kết hợp kháng sinh tĩnh mạch liều cao bao vây rộng.", duration: "Cho đến khi mô hạt mọc tốt và không cần cắt lọc thêm", access: [], access_alt: [], watch: [{ drug: "Phác đồ 3 thuốc: Pip-Tazo + Clindamycin + Vancomycin", dose: "1. Piperacillin/tazobactam 4.5g TM cách 6h (Hoặc Meropenem)\n2. Clindamycin 600-900mg TM cách 8h (Tắt độc tố vi khuẩn)\n3. Vancomycin 15-20mg/kg TM cách 8-12h (Bao vây MRSA)" }], reserve: [{ drug: "Meropenem", dose: "1 g TM cách 8h (Thay thế Pip-Tazo nếu có sốc nhiễm khuẩn nặng)" }] },
+                        child: { consideration: "Cấp cứu ngoại khoa. Phối hợp kháng sinh tương tự người lớn nhưng chỉnh liều theo cân nặng.", duration: "Dài ngày", access: [], access_alt: [], watch: [{ drug: "Clindamycin + Ceftriaxone", dose: "Clindamycin 10-13 mg/kg TM cách 8h + Ceftriaxone 80-100 mg/kg TM 1 lần/ngày" }], reserve: [] }
+                    },
+                    "viem_duong_mat": {
+                        name: "Viêm túi mật / Viêm đường mật cấp", adult: { consideration: "Giải áp đường mật (ERCP/Dẫn lưu) hoặc cắt túi mật nội soi là phương pháp điều trị quyết định. Kháng sinh nhắm vào vi khuẩn đường ruột (E.coli, Klebsiella) và yếm khí.", duration: "5 - 7 ngày (Ngừng sau khi can thiệp ngoại khoa ổn định)", access: [{ drug: "Amoxicillin + clavulanic acid", dose: "1 g + 200 mg Tiêm TM cách 8h" }], access_alt: [], watch: [{ drug: "Ceftriaxone + Metronidazole", dose: "Ceftriaxone 2g TM 1 lần/ngày + Metronidazole 500mg TM cách 8h\n(Lựa chọn rất phổ biến và hiệu quả tại bệnh viện)" }], reserve: [] },
+                        child: { consideration: "Ít gặp. Thường liên quan đến dị dạng đường mật bẩm sinh (Nang ống mật chủ).", duration: "7 ngày", access: [{ drug: "Amoxicillin + clavulanic acid", dose: "40-50 mg/kg/liều Tiêm TM cách 8h" }], access_alt: [], watch: [{ drug: "Ceftriaxone + Metronidazole", dose: "Ceftriaxone 50-80 mg/kg TM 1 lần/ngày + Metronidazole 10 mg/kg TM cách 8h" }], reserve: [] }
+                    },
+                    "nhiem_khuan_hau_san": {
+                        name: "Nhiễm khuẩn hậu sản / Viêm nội mạc tử cung", adult: { consideration: "Sốt, sản dịch hôi, đau tử cung sau sinh (đặc biệt sau sinh mổ). Nhiễm khuẩn đa chùng (Gram âm, Gram dương, Yếm khí).", duration: "Cho đến khi hết sốt 48 giờ", access: [{ drug: "Ampicillin + Gentamicin + Metronidazole", dose: "Ampicillin 2g TM cách 6h + Gentamicin 5mg/kg TM 1 lần/ngày + Metronidazole 500mg TM cách 8h" }], access_alt: [{ drug: "Clindamycin + Gentamicin", dose: "Clindamycin 900mg TM cách 8h + Gentamicin 5mg/kg TM 1 lần/ngày\n(Phác đồ chuẩn vàng, rất hiệu quả)" }], watch: [{ drug: "Ceftriaxone + Metronidazole", dose: "Ceftriaxone 2g TM 1 lần/ngày + Metronidazole 500mg TM cách 8h" }], reserve: [] },
+                        child: { consideration: "Chỉ áp dụng cho phụ nữ sau sinh.", duration: "-", access: [], access_alt: [], watch: [], reserve: [] }
+                    },
+                    "ap_xe_phoi": {
+                        name: "Áp xe phổi", adult: { consideration: "Thường do hít sặc vi khuẩn yếm khí từ khoang miệng. Cần dẫn lưu tư thế, tập thở. Không cần chọc hút mủ trừ khi áp xe khổng lồ dọa vỡ.", duration: "4 - 6 tuần (Chuyển sang đường uống khi hết sốt và cải thiện X-quang)", access: [{ drug: "Amoxicillin + clavulanic acid", dose: "1.2 g Tiêm TM cách 8h (Sau đó chuyển 875/125mg uống)" }], access_alt: [{ drug: "Clindamycin", dose: "600 mg Tiêm TM cách 8h (Sau đó chuyển 300mg uống)" }], watch: [{ drug: "Ceftriaxone + Metronidazole", dose: "Ceftriaxone 2g TM 1 lần/ngày + Metronidazole 500mg TM cách 8h" }], reserve: [] },
+                        child: { consideration: "Thường thứ phát sau viêm phổi nặng hoặc dị vật đường thở.", duration: "3 - 4 tuần", access: [{ drug: "Amoxicillin + clavulanic acid", dose: "40-50 mg/kg/liều TM cách 8h" }], access_alt: [{ drug: "Clindamycin", dose: "10-13 mg/kg TM cách 8h" }], watch: [{ drug: "Ceftriaxone + Metronidazole", dose: "Liều TM chuẩn theo cân nặng" }], reserve: [] }
+                    },
+                    "viem_nap_thanh_quan": {
+                        name: "Viêm nắp thanh quản cấp (Epiglottitis)", adult: { consideration: "CẤP CỨU ĐƯỜNG THỞ. Luôn chuẩn bị sẵn sàng đặt nội khí quản hoặc mở khí quản. Không dùng đè lưỡi khám họng vì có thể gây co thắt thanh quản ngừng thở.", duration: "7 - 10 ngày", access: [], access_alt: [], watch: [{ drug: "Ceftriaxone", dose: "2 g Tiêm TM 1 lần/ngày" }, { drug: "Cefotaxime", dose: "2 g Tiêm TM cách 6 - 8 giờ" }], reserve: [] },
+                        child: { consideration: "Cực kỳ nguy hiểm ở trẻ nhỏ. Tư thế ngồi cúi ra trước, chảy nước dãi. Không chọc ngoáy họng.", duration: "7 - 10 ngày", access: [], access_alt: [], watch: [{ drug: "Ceftriaxone", dose: "50 - 80 mg/kg Tiêm TM 1 lần/ngày" }, { drug: "Cefotaxime", dose: "50 mg/kg Tiêm TM cách 8 giờ" }], reserve: [] }
+                    },
+                    "ap_xe_nao": {
+                        name: "Áp xe não", adult: { consideration: "Chỉ định ngoại khoa (chọc hút/mở sọ) rất quan trọng để lấy bệnh phẩm cấy và giảm áp lực nội sọ. Thường là nhiễm khuẩn hỗn hợp.", duration: "4 - 8 tuần (Đường tĩnh mạch)", access: [], access_alt: [], watch: [{ drug: "Ceftriaxone + Metronidazole", dose: "Ceftriaxone 2g TM cách 12h + Metronidazole 500mg TM cách 8h\n(Phác đồ kinh nghiệm bao vây rộng)" }], reserve: [{ drug: "Vancomycin", dose: "15-20 mg/kg TM cách 8-12h\n(BẮT BUỘC THÊM VÀO nếu áp xe sau chấn thương sọ não hoặc sau mổ thần kinh để diệt MRSA)" }] },
+                        child: { consideration: "Hay gặp ở trẻ có tim bẩm sinh tím (Tứ chứng Fallot).", duration: "4 - 6 tuần", access: [], access_alt: [], watch: [{ drug: "Ceftriaxone + Metronidazole", dose: "Ceftriaxone 50 mg/kg TM cách 12h + Metronidazole 10 mg/kg TM cách 8h" }], reserve: [] }
+                    },
+                    "nhiem_khuan_catheter": {
+                        name: "Nhiễm khuẩn huyết do Catheter tĩnh mạch (CRBSI)", adult: { consideration: "Rút bỏ ngay Catheter tĩnh mạch trung tâm (CVC) nếu có thể và cấy đầu tip catheter. Thường do Tụ cầu (CoNS, S.aureus) hoặc nấm Candida.", duration: "7 - 14 ngày (Tính từ ngày cấy máu âm tính đầu tiên)", access: [], access_alt: [], watch: [{ drug: "Cefazolin", dose: "2 g Tiêm TM cách 8h (Nếu đã biết chắc chắn là Tụ cầu nhạy MSSA)" }], reserve: [{ drug: "Vancomycin", dose: "15-20 mg/kg Tiêm TM cách 8-12h\n(Kháng sinh kinh nghiệm ĐẦU TAY trong khi chờ kết quả cấy)" }, { drug: "Meropenem", dose: "1 g TM cách 8h (Phối hợp thêm với Vanco nếu bệnh nhân có sốc nhiễm khuẩn/giảm bạch cầu)" }] },
+                        child: { consideration: "Rút Catheter là biện pháp quan trọng nhất. Cấy máu ngoại vi và máu qua Catheter để so sánh thời gian mọc.", duration: "7 - 14 ngày", access: [], access_alt: [], watch: [], reserve: [{ drug: "Vancomycin", dose: "15 mg/kg Tiêm TM cách 6-8h" }] }
+                    },
+                    "viem_phuc_mac_tien_phat": {
+                        name: "Viêm phúc mạc tiên phát (SBP do xơ gan)", adult: { consideration: "Xảy ra trên bệnh nhân xơ gan cổ trướng (không có thủng tạng). Chẩn đoán khi BCĐNTT dịch ổ bụng > 250/mm3. Phải truyền Albumin để ngừa hội chứng gan thận.", duration: "5 - 7 ngày", access: [], access_alt: [], watch: [{ drug: "Ceftriaxone", dose: "2 g Tiêm TM 1 lần/ngày (Kháng sinh đầu tay)" }, { drug: "Cefotaxime", dose: "2 g Tiêm TM cách 8 giờ" }, { drug: "Ciprofloxacin (Dự phòng)", dose: "500 mg uống 1 lần/ngày (Dùng ĐỂ DỰ PHÒNG sau khi điều trị khỏi đợt cấp hoặc có xuất huyết tiêu hóa)" }], reserve: [] },
+                        child: { consideration: "Gặp ở trẻ xơ gan mật teo, hội chứng thận hư.", duration: "5 - 7 ngày", access: [], access_alt: [], watch: [{ drug: "Ceftriaxone", dose: "50 - 80 mg/kg Tiêm TM 1 lần/ngày" }], reserve: [] }
+                    },
+                    "bach_hau": {
+                        name: "Bệnh Bạch hầu (Diphtheria)", adult: { consideration: "Kháng sinh chỉ để TIÊU DIỆT VI KHUẨN chống lây lan, KHÔNG vô hiệu hóa được độc tố. BẮT BUỘC phải tiêm Huyết thanh kháng bạch hầu (DAT) càng sớm càng tốt. Cách ly nghiêm ngặt.", duration: "14 ngày", access: [{ drug: "Phenoxymethylpenicillin (Penicillin V)", dose: "250 mg ĐƯỜNG UỐNG cách 6 giờ" }, { drug: "Penicillin G", dose: "1 - 2 triệu IU Tiêm TM/Bắp cách 6 giờ (Cho bệnh nhân không uống được)" }], access_alt: [], watch: [{ drug: "Erythromycin", dose: "500 mg ĐƯỜNG UỐNG cách 6 giờ\n(Dùng cho người dị ứng Penicillin hoặc để dự phòng người tiếp xúc)" }], reserve: [] },
+                        child: { consideration: "Tiêm DAT lập tức. Soi họng thấy giả mạc trắng xám, dai, chảy máu khi bóc.", duration: "14 ngày", access: [{ drug: "Phenoxymethylpenicillin", dose: "125 - 250 mg uống cách 6 giờ" }], access_alt: [], watch: [{ drug: "Erythromycin", dose: "40 - 50 mg/kg/ngày chia 4 lần uống" }], reserve: [] }
+                    },
+                    "du_phong_phau_thuat": {
+                    name: "Dự phòng phẫu thuật (Surgical Prophylaxis)", 
+                    adult: { 
+                        consideration: "BẮT BUỘC tiêm 1 liều duy nhất trong vòng 60 phút TRƯỚC khi rạch da. Chỉ lặp lại liều nếu phẫu thuật kéo dài > 4 tiếng hoặc mất máu > 1.5L. KHÔNG kéo dài kháng sinh sau phẫu thuật (trừ phẫu thuật tim mạch/chỉnh hình đặc thù).", 
+                        duration: "1 LIỀU DUY NHẤT (Trước mổ)", 
+                        access: [
+                            { drug: "Cefazolin", dose: "2 g Tiêm tĩnh mạch (Dùng cho hầu hết phẫu thuật sạch/sạch nhiễm)" },
+                            { drug: "Cefazolin + Metronidazole", dose: "Cefazolin 2g TM + Metronidazole 500mg TM\n(Phối hợp cho phẫu thuật dạ dày - ruột, ruột thừa, sản phụ khoa)" }
+                        ], 
+                        access_alt: [], watch: [], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Nguyên tắc thời gian tiêm trước mổ tương tự người lớn.", 
+                        duration: "1 LIỀU DUY NHẤT", 
+                        access: [
+                            { drug: "Cefazolin", dose: "50 mg/kg Tiêm TM" },
+                            { drug: "Cefazolin + Metronidazole", dose: "Cefazolin 50 mg/kg TM + Metronidazole 15 mg/kg TM" }
+                        ], 
+                        access_alt: [], watch: [], reserve: [] 
+                    }
+                    },
+                    "viem_phe_quan_cap": {
+                        name: "Viêm phế quản cấp (Acute Bronchitis)", 
+                        adult: { 
+                            consideration: "Đa số do virus. WHO KHUYẾN CÁO KHÔNG DÙNG KHÁNG SINH cho người khỏe mạnh. Kháng sinh không làm giảm ho mà tăng rủi ro kháng thuốc. Chỉ điều trị triệu chứng (giảm ho, long đờm).", 
+                            duration: "KHÔNG DÙNG KHÁNG SINH", 
+                            access: [], access_alt: [], watch: [], reserve: [] 
+                        },
+                        child: { 
+                            consideration: "Tương tự người lớn. Cần phân biệt kỹ với viêm phổi (thở nhanh, rút lõm lồng ngực) hoặc ho gà trước khi quyết định không dùng kháng sinh.", 
+                            duration: "KHÔNG DÙNG KHÁNG SINH", 
+                            access: [], access_alt: [], watch: [], reserve: [] 
+                        }
+                    },
+                    "tieu_chay_cap": {
+                        name: "Tiêu chảy cấp / Viêm dạ dày ruột", 
+                        adult: { 
+                            consideration: "Bù dịch và điện giải (Oresol) là cốt lõi. KHÔNG dùng kháng sinh cho tiêu chảy phân nước cấp tính không có máu. Chỉ dùng kháng sinh khi nghi Tả, Lỵ trực khuẩn (phân máu) hoặc C. difficile.", 
+                            duration: "KHÔNG DÙNG KHÁNG SINH", 
+                            access: [], access_alt: [], watch: [], reserve: [] 
+                        },
+                        child: { 
+                            consideration: "Bù dịch và bổ sung Kẽm (Zinc) trong 10-14 ngày. Không dùng thuốc cầm tiêu chảy. Không dùng kháng sinh.", 
+                            duration: "KHÔNG DÙNG KHÁNG SINH", 
+                            access: [], access_alt: [], watch: [], reserve: [] 
+                        }
+                    },
+                    "suy_dinh_duong_nang": {
+                        name: "Suy dinh dưỡng cấp tính nặng (SAM)", 
+                        adult: { 
+                            consideration: "Phác đồ này của WHO thiết kế đặc thù cho đối tượng trẻ em.", 
+                            duration: "Không áp dụng", 
+                            access: [], access_alt: [], watch: [], reserve: [] 
+                        },
+                        child: { 
+                            consideration: "Trẻ SAM rất dễ nhiễm trùng nặng mà không có biểu hiện rõ (không sốt). Cần phân loại: Điều trị ngoại trú (không biến chứng) và Nhập viện (có biến chứng/phù/bỏ bú). Luôn chú ý hạ đường huyết và hạ thân nhiệt.", 
+                            duration: "5 - 7 ngày", 
+                            access: [
+                                { drug: "Amoxicillin", dose: "40 - 45 mg/kg/liều uống cách nhau 12 giờ\n(Dành cho trẻ KHÔNG có biến chứng, thèm ăn, ngoại trú)" },
+                                { drug: "Ampicillin + Gentamicin", dose: "Ampicillin 50mg/kg TM/TB cách 6h + Gentamicin 7.5mg/kg TM/TB 1 lần/ngày\n(Dành cho trẻ CÓ biến chứng, phải nhập viện)" }
+                            ], 
+                            access_alt: [], 
+                            watch: [
+                                { drug: "Ceftriaxone", dose: "80 mg/kg Tiêm TM 1 lần/ngày\n(Dùng nếu có sốc, nghi viêm màng não hoặc không đáp ứng phác đồ Ampicillin sau 48h)" }
+                            ], reserve: [] 
+                        }
+                    },
+                    "nhiem_trung_vet_bong": {
+                        name: "Nhiễm khuẩn vết bỏng", 
+                        adult: { 
+                            consideration: "Nhiễm khuẩn tại chỗ ban đầu (vài ngày đầu) thường do S. aureus và S. pyogenes. Giai đoạn muộn thường do Gram âm (Pseudomonas). Chỉ dùng kháng sinh toàn thân khi có dấu hiệu nhiễm khuẩn lan rộng hoặc toàn thân.", 
+                            duration: "7 - 10 ngày", 
+                            access: [
+                                { drug: "Amoxicillin + clavulanic acid", dose: "1 g + 200 mg Tiêm tĩnh mạch cách 8 giờ" }
+                            ], 
+                            access_alt: [], 
+                            watch: [
+                                { drug: "Piperacillin + tazobactam", dose: "4.5 g Tiêm tĩnh mạch cách 6 - 8 giờ\n(Dùng khi nhiễm khuẩn muộn, bao vây Pseudomonas)" }
+                            ], reserve: [] 
+                        },
+                        child: { 
+                            consideration: "Làm sạch mô hoại tử và chăm sóc tại chỗ là chính. Chỉnh liều kháng sinh tĩnh mạch theo cân nặng.", 
+                            duration: "7 - 10 ngày", 
+                            access: [
+                                { drug: "Amoxicillin + clavulanic acid", dose: "40 - 50 mg/kg/liều Tiêm TM cách 8 giờ" }
+                            ], 
+                            access_alt: [], 
+                            watch: [
+                                { drug: "Ceftriaxone", dose: "80 mg/kg Tiêm TM 1 lần/ngày (Nếu không nghi ngờ Pseudomonas)" },
+                                { drug: "Piperacillin + tazobactam", dose: "100 mg/kg (theo piperacillin) TM cách 8 giờ" }
+                            ], reserve: [] 
+                        }
+                    },
+                    "lau": {
+                    name: "Bệnh Lậu (Gonorrhoea)", 
+                    adult: { 
+                        consideration: "Thường đồng nhiễm với Chlamydia, WHO khuyến cáo cân nhắc điều trị phối hợp cả 2 tác nhân nếu không có xét nghiệm loại trừ. BẮT BUỘC điều trị cho cả bạn tình.", 
+                        duration: "1 LIỀU DUY NHẤT", 
+                        access: [], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Ceftriaxone + Azithromycin", dose: "Ceftriaxone 500 mg Tiêm bắp 1 liều + Azithromycin 1 g Uống 1 liều\n(Phác đồ phối hợp phổ biến trị cả Lậu và Chlamydia)" },
+                            { drug: "Ceftriaxone", dose: "500 mg Tiêm bắp 1 liều duy nhất\n(Nếu chắc chắn không đồng nhiễm Chlamydia)" }
+                        ], 
+                        reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Ở trẻ sơ sinh chủ yếu gặp viêm kết mạc mắt do lậu cầu (Lậu mắt sơ sinh) lây từ mẹ lúc sinh.", 
+                        duration: "1 LIỀU DUY NHẤT", 
+                        access: [], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Ceftriaxone", dose: "50 mg/kg (tối đa 150 mg) Tiêm bắp 1 liều duy nhất" }
+                        ], 
+                        reserve: [] 
+                    }
+                },
+                "chlamydia": {
+                    name: "Nhiễm Chlamydia trachomatis sinh dục", 
+                    adult: { 
+                        consideration: "Phụ nữ có thai KHÔNG dùng Doxycycline, phải thay bằng Azithromycin. BẮT BUỘC điều trị cho cả bạn tình.", 
+                        duration: "7 ngày (Doxycycline) hoặc 1 liều duy nhất (Azithromycin)", 
+                        access: [
+                            { drug: "Doxycycline", dose: "100 mg Uống cách 12 giờ trong 7 ngày" }
+                        ], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Azithromycin", dose: "1 g Uống 1 liều duy nhất\n(Ưu tiên cho phụ nữ có thai hoặc người kém tuân thủ phác đồ nhiều ngày)" }
+                        ], 
+                        reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Trẻ em thường mắc viêm phổi hoặc viêm kết mạc do Chlamydia lây từ mẹ. Chỉ định liều cho viêm phổi/viêm kết mạc sơ sinh.", 
+                        duration: "3 ngày (với Azithromycin)", 
+                        access: [], 
+                        access_alt: [], 
+                        watch: [
+                            { drug: "Azithromycin", dose: "20 mg/kg Uống 1 lần/ngày trong 3 ngày" }
+                        ], 
+                        reserve: [] 
+                    }
+                },
+                "giang_mai": {
+                    name: "Giang mai sớm (Syphilis)", 
+                    adult: { 
+                        consideration: "Bao gồm giang mai nguyên phát, thứ phát hoặc tiềm ẩn sớm (< 1 năm). Phụ nữ có thai BẮT BUỘC dùng Penicillin (nếu dị ứng phải giải mẫn cảm, không dùng Doxycycline).", 
+                        duration: "1 LIỀU DUY NHẤT", 
+                        access: [
+                            { drug: "Benzathine benzylpenicillin", dose: "2.4 triệu IU Tiêm bắp 1 liều duy nhất (Nên chia làm 2 mũi tiêm ở 2 bên mông)" }
+                        ], 
+                        access_alt: [
+                            { drug: "Doxycycline", dose: "100 mg Uống cách 12 giờ trong 14 ngày\n(Chỉ dùng khi bệnh nhân dị ứng Penicillin và KHÔNG mang thai)" }
+                        ], 
+                        watch: [], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Giang mai bẩm sinh có triệu chứng cần nhập viện tiêm tĩnh mạch 10-14 ngày. Liều dưới đây dành cho trẻ sinh ra từ mẹ mắc giang mai chưa điều trị đủ nhưng trẻ KHÔNG có biểu hiện lâm sàng.", 
+                        duration: "1 LIỀU DUY NHẤT", 
+                        access: [
+                            { drug: "Benzathine benzylpenicillin", dose: "50.000 IU/kg Tiêm bắp 1 liều duy nhất" }
+                        ], 
+                        access_alt: [], watch: [], reserve: [] 
+                    }
+                },
+                "trichomonas": {
+                    name: "Nhiễm Trichomonas sinh dục (Trùng roi)", 
+                    adult: { 
+                        consideration: "TUYỆT ĐỐI KHÔNG uống rượu bia trong thời gian dùng Metronidazole và ít nhất 48 giờ sau khi ngừng thuốc để tránh hiệu ứng antabuse. Điều trị cho cả bạn tình.", 
+                        duration: "1 liều duy nhất hoặc 7 ngày", 
+                        access: [
+                            { drug: "Metronidazole", dose: "2 g Uống 1 liều duy nhất" },
+                            { drug: "Metronidazole (thay thế)", dose: "400 - 500 mg Uống cách 12 giờ trong 7 ngày" }
+                        ], 
+                        access_alt: [], watch: [], reserve: [] 
+                    },
+                    child: { 
+                        consideration: "Bệnh rất hiếm gặp ở trẻ em trước tuổi dậy thì. Nếu phát hiện ở trẻ nhỏ, cần lưu ý và sàng lọc nguy cơ lạm dụng tình dục.", 
+                        duration: "1 liều duy nhất", 
+                        access: [
+                            { drug: "Metronidazole", dose: "30 mg/kg Uống 1 liều duy nhất (Tối đa 2 g)" }
+                        ], 
+                        access_alt: [], watch: [], reserve: [] 
+                    }
+                }
+            },
+            drugs: [
+                { name: "Amoxicillin", group: "Access", desc: "Lựa chọn đầu tay cho nhiễm khuẩn hô hấp nhẹ." },
+                { name: "Amoxicillin + clavulanic acid", group: "Access", desc: "Mở rộng phổ diệt vi khuẩn sinh beta-lactamase." },
+                { name: "Cefalexin", group: "Access", desc: "Cephalosporin thế hệ 1, ưu tiên cho da mô mềm." },
+                { name: "Phenoxymethylpenicillin", group: "Access", desc: "Penicillin V, ưu tiên cho viêm họng do Liên cầu." },
+                { name: "Doxycycline", group: "Access", desc: "Tetracycline, lựa chọn đầu tay 1 liều cho Bệnh Tả." },
+                { name: "Ampicillin + Gentamicin", group: "Access", desc: "Phác đồ Access phối hợp kinh điển cho Nhiễm khuẩn huyết." },
+                { name: "Nitrofurantoin", group: "Access", desc: "Dùng cho viêm bàng quang cấp, không dùng khi suy thận." },
+                { name: "Mupirocin", group: "Access", desc: "Kháng sinh bôi tại chỗ cho nhiễm khuẩn da nông (Chốc lở)." },
+                { name: "Clarithromycin", group: "Watch", desc: "Macrolid, dùng cho hô hấp khi dị ứng Penicillin." },
+                { name: "Azithromycin", group: "Watch", desc: "Macrolid 1 lần/ngày. Rất quan trọng trong Thương hàn, Tả, Lậu." },
+                { name: "Ciprofloxacin", group: "Watch", desc: "Fluoroquinolone. Dùng cho Lỵ trực khuẩn, Thương hàn, Tả. Dễ kháng thuốc." },
+                { name: "Ceftriaxone", group: "Watch", desc: "Cephalosporin TH3, cốt lõi trong Viêm màng não, Nhiễm khuẩn huyết, Lậu." },
+                { name: "Cefotaxime", group: "Watch", desc: "Cephalosporin TH3, dùng thay Ceftriaxone cho viêm màng não." },
+                { name: "Piperacillin + tazobactam", group: "Watch", desc: "Kháng sinh tiêm phổ cực rộng bao phủ cả Pseudomonas." },
+                { name: "Meropenem", group: "Reserve", desc: "Carbapenem. Chỉ định cho nhiễm khuẩn cực nặng, đa kháng." },
+                { name: "Metronidazole", group: "Access", desc: "Kháng sinh diệt vi khuẩn yếm khí (Anaerobes) và ký sinh trùng. Rất quan trọng trong nhiễm khuẩn ổ bụng và C. difficile." },
+                { name: "Benzathine benzylpenicillin", group: "Access", desc: "Penicillin tác dụng kéo dài (tiêm bắp). Là xương sống trong điều trị Giang mai." },
+                { name: "Vancomycin (Đường uống)", group: "Watch", desc: "Glycopeptide. Dạng uống không hấp thu vào máu, chỉ dùng chuyên biệt để tiêu diệt C. difficile tại ruột." },
+                { name: "Cefazolin", group: "Access", desc: "Cephalosporin thế hệ 1 dạng tiêm. Cực kỳ hiệu quả và là lựa chọn ưu tiên cho các nhiễm khuẩn do Tụ cầu vàng (S. aureus) nhạy methicillin, đặc biệt trong nhiễm khuẩn xương khớp và dự phòng phẫu thuật." },
+                { name: "Vancomycin (Tiêm tĩnh mạch)", group: "Reserve", desc: "Glycopeptide. Là kháng sinh 'chốt chặn' (Reserve) chủ lực cho các nhiễm khuẩn nặng do Tụ cầu vàng kháng Methicillin (MRSA). Cần theo dõi chức năng thận." },
+                { name: "Cefepime", group: "Watch", desc: "Cephalosporin thế hệ 4 (Tiêm TM). Phổ kháng khuẩn rất rộng, bao phủ tốt Pseudomonas aeruginosa. Lựa chọn ưu tiên cho Sốt giảm bạch cầu hạt." },
+                { name: "Cefotaxime", group: "Watch", desc: "Cephalosporin thế hệ 3. Đặc tính tương tự Ceftriaxone nhưng an toàn hơn cho trẻ sơ sinh (<28 ngày tuổi) vì không tranh chấp bilirubin (không gây vàng da nhân)." },
+                { name: "Rifampicin", group: "Access", desc: "Kháng sinh cực kỳ quan trọng trong điều trị Lao (TB), Phong và Brucella. Nước tiểu và dịch tiết có thể có màu đỏ/cam khi dùng thuốc." },
+                { name: "Cefotaxime", group: "Watch", desc: "Cephalosporin thế hệ 3. Tương tự Ceftriaxone nhưng thời gian bán thải ngắn hơn (phải tiêm nhiều lần trong ngày). Rất an toàn cho trẻ sơ sinh và bệnh nhân suy gan." },
+                { name: "Erythromycin (Đường toàn thân)", group: "Watch", desc: "Macrolid thế hệ cũ. Tác dụng phụ trên tiêu hóa nhiều (buồn nôn). Hiện nay chủ yếu dùng điều trị/dự phòng Bạch hầu hoặc Ho gà." },
+                { name: "Penicillin G", group: "Access", desc: "Penicillin tự nhiên đường tiêm. Lựa chọn kinh điển cho Bạch hầu, Uốn ván, Giang mai thần kinh và Nhiễm liên cầu khuẩn." },
+                { name: "Cefotaxime", group: "Watch", desc: "Cephalosporin thế hệ 3. Tương tự Ceftriaxone nhưng thời gian bán thải ngắn hơn (phải tiêm nhiều lần trong ngày). Rất an toàn cho trẻ sơ sinh và bệnh nhân suy gan." },
+                { name: "Erythromycin (Đường toàn thân)", group: "Watch", desc: "Macrolid thế hệ cũ. Tác dụng phụ trên tiêu hóa nhiều (buồn nôn). Hiện nay chủ yếu dùng điều trị/dự phòng Bạch hầu hoặc Ho gà." }
+            ],
+            pathogens: {
+                "mrsa": {
+                    name: "Tụ cầu vàng kháng Methicillin (MRSA)",
+                    consideration: "MRSA kháng lại tất cả các Beta-lactam (trừ Ceftaroline). Cần loại bỏ ngay các ổ mủ (dẫn lưu áp xe) và rút các ống thông mạch máu (catheter) nếu có thể.",
+                    duration: "Tùy thuộc vị trí nhiễm khuẩn (7 - 28 ngày)",
+                    access: [], access_alt: [],
+                    watch: [
+                        { drug: "Trimethoprim / Sulfamethoxazole", dose: "Phụ thuộc cân nặng (Chỉ dùng cho nhiễm khuẩn da/mô mềm nhẹ, ngoại trú)" },
+                        { drug: "Clindamycin", dose: "600 mg Tiêm TM hoặc Uống cách 8 giờ (Dùng cho nhiễm khuẩn da/xương)" }
+                    ], 
+                    reserve: [
+                        { drug: "Vancomycin", dose: "15-20 mg/kg Tiêm TM cách 8-12 giờ\n(Kháng sinh CHUẨN VÀNG đường tĩnh mạch cho mọi nhiễm khuẩn MRSA nặng)" },
+                        { drug: "Linezolid", dose: "600 mg Tiêm TM hoặc Uống cách 12 giờ\n(Ngấm cực tốt vào phổi và mô mềm. Không cần chỉnh liều suy thận)" }
+                    ]
+                },
+                "esbl": {
+                    name: "E. coli / Klebsiella sinh ESBL",
+                    consideration: "Vi khuẩn sinh men Beta-lactamase phổ rộng (ESBL) phá hủy hầu hết Penicillin và Cephalosporin. Lựa chọn tối ưu phụ thuộc vào vị trí nhiễm khuẩn (Máu/Phổi vs. Tiết niệu).",
+                    duration: "7 - 14 ngày",
+                    access: [{ drug: "Nitrofurantoin", dose: "100mg uống cách 12h (CHỈ DÙNG CHO Viêm bàng quang cấp chưa biến chứng, vì thuốc chỉ bài tiết qua nước tiểu)" }], 
+                    access_alt: [],
+                    watch: [
+                        { drug: "Fosfomycin", dose: "3g uống 1 liều duy nhất (Dành cho viêm bàng quang)" },
+                        { drug: "Piperacillin + tazobactam", dose: "4.5g Tiêm TM cách 6h (Chỉ dùng cho viêm thận bể thận hoặc nhiễm khuẩn ổ bụng nhẹ/vừa)" }
+                    ], 
+                    reserve: [
+                        { drug: "Meropenem", dose: "1 g Tiêm TM cách 8 giờ\n(Lựa chọn ĐẦU TAY VÀ AN TOÀN NHẤT cho nhiễm khuẩn huyết hoặc nhiễm khuẩn nặng do ESBL)" }
+                    ]
+                },
+                "pseudomonas": {
+                    name: "Trực khuẩn mủ xanh (Pseudomonas aeruginosa)",
+                    consideration: "Vi khuẩn Gram âm có độc lực cực cao và tỷ lệ kháng thuốc lớn. Thường gây Viêm phổi bệnh viện (HAP/VAP) hoặc nhiễm khuẩn huyết.",
+                    duration: "10 - 14 ngày",
+                    access: [], access_alt: [],
+                    watch: [
+                        { drug: "Cefepime hoặc Ceftazidime", dose: "2 g Tiêm TM cách 8 giờ (Cephalosporin có tác dụng kháng trực khuẩn mủ xanh)" },
+                        { drug: "Piperacillin + tazobactam", dose: "4.5 g Tiêm TM cách 6 giờ" },
+                        { drug: "Ciprofloxacin", dose: "400 mg Tiêm TM cách 8-12 giờ (Thuốc uống duy nhất có tác dụng với Pseudomonas, dùng để xuống thang)" }
+                    ], 
+                    reserve: [
+                        { drug: "Meropenem", dose: "1 - 2 g Tiêm TM cách 8 giờ" }
+                    ]
+                }
+            }
+        };
+
+        // ======================================================================
+        // 2. KHỞI TẠO GIAO DIỆN & RENDER DANH SÁCH BỆNH
+        // ======================================================================
+        function initApp() {
+            const select = document.getElementById('diseaseSelect');
+            let groups = {};
+            
+            // Phân nhóm bệnh lý tự động
+            for (const [id, data] of Object.entries(awareDB.diseases)) {
+                let cat = data.category || "Các bệnh lý khác";
+                if (!groups[cat]) groups[cat] = [];
+                groups[cat].push({ id, name: data.name });
+            }
+
+            // Đổ dữ liệu vào Select
+            let html = "";
+            for (const cat in groups) {
+                html += `<optgroup label="--- ${cat.toUpperCase()} ---">`;
+                groups[cat].forEach(d => {
+                    html += `<option value="${d.id}">${d.name}</option>`;
+                });
+                html += `</optgroup>`;
+            }
+            select.innerHTML = html;
+        }
+
+        // ======================================================================
+        // 3. LOGIC GIAO DIỆN (DARK MODE, BOTTOM NAV, SEARCH)
+        // ======================================================================
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            document.getElementById('icon-sun').classList.toggle('hidden');
+            document.getElementById('icon-moon').classList.toggle('hidden');
+        }
+
+        function switchTab(tabIndex) {
+            // Ẩn tất cả nội dung
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            // Reset màu tất cả nút nav
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-blue-600', 'dark:text-blue-400');
+                btn.classList.add('text-gray-400', 'dark:text-gray-500');
+            });
+
+            // Kích hoạt tab được chọn
+            document.getElementById(`tab${tabIndex}`).classList.add('active');
+            const activeBtn = document.querySelectorAll('.nav-btn')[tabIndex - 1];
+            activeBtn.classList.remove('text-gray-400', 'dark:text-gray-500');
+            activeBtn.classList.add('text-blue-600', 'dark:text-blue-400');
+        }
+
+        function filterDiseases() {
+            const input = document.getElementById('diseaseSearch').value.toLowerCase().trim();
+            const select = document.getElementById('diseaseSelect');
+            const optgroups = select.getElementsByTagName('optgroup');
+            let firstVisibleOption = null;
+
+            for (let group of optgroups) {
+                let hasVisibleOption = false;
+                const options = group.getElementsByTagName('option');
+                for (let option of options) {
+                    const text = option.textContent.toLowerCase();
+                    if (text.includes(input)) {
+                        option.style.display = '';
+                        hasVisibleOption = true;
+                        if (!firstVisibleOption) firstVisibleOption = option;
+                    } else {
+                        option.style.display = 'none';
+                    }
+                }
+                group.style.display = hasVisibleOption ? '' : 'none';
+            }
+            if (input !== '' && firstVisibleOption) select.value = firstVisibleOption.value;
+        }
+
+        function toggleWeight() {
+            const type = document.getElementById('patientType').value;
+            const container = document.getElementById('weightContainer');
+            container.style.display = type === 'child' ? 'block' : 'none';
+            if(type === 'adult') document.getElementById('weightInput').value = '';
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        function copyOrder(textToCopy) {
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showToast();
+            });
+        }
+
+        // ======================================================================
+        // 4. LÕI TÍNH TOÁN & HIỂN THỊ PHÁC ĐỒ (HỖ TRỢ TÍNH LIỀU TỰ ĐỘNG)
+        // ======================================================================
+        function calculateDisease() {
+            const diseaseId = document.getElementById('diseaseSelect').value;
+            const patientType = document.getElementById('patientType').value;
+            const weight = parseFloat(document.getElementById('weightInput').value) || 0;
+            
+            const diseaseNode = awareDB.diseases[diseaseId];
+            const patientData = diseaseNode[patientType];
+            const title = diseaseNode.name;
+
+            let html = `
+                <div class="mb-4">
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white border-b-2 border-blue-600 pb-2 inline-block">
+                        ${title} (${patientType === 'adult' ? 'Người lớn' : 'Trẻ em'})
+                    </h2>
+                </div>
+            `;
+
+            // HÀM PHỤ: Tự động tính liều nếu có mg/kg
+            function parseDose(doseStr) {
+                if (weight > 0 && doseStr.includes('mg/kg')) {
+                    return doseStr.replace(/(\d+(?:\.\d+)?)(?:\s*-\s*(\d+(?:\.\d+)?))?\s*mg\/kg/gi, function(match, p1, p2) {
+                        let min = (parseFloat(p1) * weight).toFixed(0);
+                        let max = p2 ? (parseFloat(p2) * weight).toFixed(0) : min;
+                        let calcStr = p2 ? `${min} - ${max} mg` : `${min} mg`;
+                        return `${match} <strong class="text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-slate-700 px-1 rounded animate-pulse">(= ${calcStr})</strong>`;
+                    });
+                }
+                return doseStr;
+            }
+
+            // HÀM PHỤ: Vẽ từng khối phác đồ (có nút Copy)
+            function renderBlock(data, blockTitle) {
+                if (!data) return '';
+                let blockHtml = '';
+                
+                if (blockTitle) {
+                    blockHtml += `<div class="mb-6 border border-gray-200 dark:border-dark-border rounded-xl overflow-hidden shadow-sm">`;
+                    blockHtml += `<div class="bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-white font-bold px-4 py-3 border-b border-gray-200 dark:border-dark-border uppercase flex justify-between items-center">
+                                    <span>${blockTitle}</span>
+                                  </div>`;
+                    blockHtml += `<div class="p-4 bg-white dark:bg-dark-card">`;
+                } else {
+                    blockHtml += `<div class="mb-6">`;
+                }
+
+                blockHtml += `
+                    <div class="bg-blue-50 dark:bg-slate-800 text-blue-900 dark:text-blue-100 p-4 rounded-xl border border-blue-100 dark:border-slate-700 mb-4 shadow-sm">
+                        <div class="flex items-start">
+                            <svg class="w-6 h-6 mr-2 flex-shrink-0 text-blue-600 dark:text-blue-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <div>
+                                <h3 class="font-bold mb-1">Cân nhắc lâm sàng & Xử trí:</h3>
+                                <p class="text-sm leading-relaxed whitespace-pre-line">${data.consideration}</p>
+                                <p class="text-sm font-bold mt-2 text-blue-700 dark:text-blue-400">⏳ Thời gian điều trị: ${data.duration}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                const drawDrugCard = (drug, type, bg, border, textColor, badgeBg) => {
+                    const parsedDose = parseDose(drug.dose);
+                    const plainText = `${diseaseNode.name} - ${drug.drug}: ${drug.dose.replace(/\n/g, ' ')}`;
+                    
+                    // LỌC TÌM CẢNH BÁO TƯƠNG TÁC THUỐC
+                    const drugDictExact = awareDB.drugs.find(d => drug.drug.includes(d.name)) || {};
+                    let warningHtml = '';
+                    if(drugDictExact.warning) {
+                        warningHtml = `<div class="mt-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-lg p-3 text-sm text-red-800 dark:text-red-300 flex items-start shadow-inner">
+                            <span class="mr-2 text-lg">⚠️</span>
+                            <span><strong>Cảnh báo an toàn:</strong> ${drugDictExact.warning}</span>
+                        </div>`;
+                    }
+                    
+                    return `
+                    <div class="${bg} dark:bg-slate-800 border-l-4 ${border} p-4 mb-3 rounded-r-xl shadow-sm relative group">
+                        <div class="pr-8">
+                            <p class="font-bold ${textColor} dark:text-white text-lg">${drug.drug}</p>
+                            <p class="text-sm ${textColor} dark:text-gray-300 whitespace-pre-line mt-1">${parsedDose}</p>
+                            ${warningHtml} </div>
+                        <button onclick="copyOrder('${plainText}')" class="absolute top-4 right-4 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 p-1" title="Copy y lệnh">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                        </button>
+                    </div>`;
+                };
+                if (data.access && data.access.length > 0) {
+                    blockHtml += `<h4 class="font-bold text-green-700 dark:text-green-400 mt-4 mb-2 flex items-center"><span class="w-3 h-3 bg-green-500 rounded-full mr-2"></span> TIẾP CẬN (Lựa chọn đầu tay)</h4>`;
+                    data.access.forEach(drug => blockHtml += drawDrugCard(drug, 'Access', 'bg-green-50', 'border-green-500', 'text-green-900', 'bg-green-500'));
+                }
+
+                if (data.access_alt && data.access_alt.length > 0) {
+                    blockHtml += `<h4 class="font-bold text-green-700 dark:text-green-400 mt-5 mb-2 flex items-center"><span class="w-3 h-3 bg-green-400 rounded-full mr-2"></span> TIẾP CẬN (Thay thế)</h4>`;
+                    data.access_alt.forEach(drug => blockHtml += drawDrugCard(drug, 'Access_Alt', 'bg-white', 'border-green-400 border-y border-r border-green-100', 'text-green-900', 'bg-green-400'));
+                }
+
+                if (data.watch && data.watch.length > 0) {
+                    blockHtml += `<h4 class="font-bold text-yellow-700 dark:text-yellow-400 mt-5 mb-2 flex items-center"><span class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></span> GIÁM SÁT (Thay thế / Bắt buộc)</h4>`;
+                    data.watch.forEach(drug => blockHtml += drawDrugCard(drug, 'Watch', 'bg-yellow-50', 'border-yellow-500', 'text-yellow-900', 'bg-yellow-500'));
+                }
+
+                if (data.reserve && data.reserve.length > 0) {
+                    blockHtml += `<h4 class="font-bold text-red-700 dark:text-red-400 mt-5 mb-2 flex items-center"><span class="w-3 h-3 bg-red-600 rounded-full mr-2 animate-pulse"></span> DỰ TRỮ (Cảnh báo nguy cơ)</h4>`;
+                    data.reserve.forEach(drug => blockHtml += drawDrugCard(drug, 'Reserve', 'bg-red-50', 'border-red-600', 'text-red-900', 'bg-red-600'));
+                }
+
+                blockHtml += blockTitle ? `</div></div>` : `</div>`;
+                return blockHtml;
+            }
+
+            // KIỂM TRA MỨC ĐỘ BỆNH VÀ RENDER
+            if (patientData.mild || patientData.severe) {
+                if (patientData.mild) html += renderBlock(patientData.mild, "Mức độ Nhẹ / Ngoại trú");
+                if (patientData.severe) html += renderBlock(patientData.severe, "Mức độ Nặng / Nội trú (Cấp cứu)");
+            } else {
+                html += renderBlock(patientData, null);
+            }
+
+            const resultDiv = document.getElementById('result-disease');
+            resultDiv.innerHTML = html;
+            resultDiv.classList.remove('hidden');
+        }
+
+        // ======================================================================
+        // 5. TỪ ĐIỂN KHÁNG SINH & CÔNG CỤ eGFR
+        // ======================================================================
+        function searchDrug() {
+            const query = document.getElementById('drugInput').value.toLowerCase().trim();
+            const resultDiv = document.getElementById('result-drug');
+            if (!query) { resultDiv.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center italic mt-4">Gõ tên thuốc để tra cứu...</p>'; return; }
+            const results = awareDB.drugs.filter(d => d.name.toLowerCase().includes(query));
+            if (results.length === 0) { resultDiv.innerHTML = '<p class="text-red-500 text-center font-medium mt-4">Không tìm thấy.</p>'; return; }
+
+            let html = '';
+            results.forEach(d => {
+                let colorClass = d.group === 'Access' ? 'text-green-800 dark:text-green-400' : d.group === 'Watch' ? 'text-yellow-800 dark:text-yellow-400' : 'text-red-800 dark:text-red-400';
+                let bgColor = d.group === 'Access' ? 'bg-green-50 dark:bg-slate-800' : d.group === 'Watch' ? 'bg-yellow-50 dark:bg-slate-800' : 'bg-red-50 dark:bg-slate-800';
+                let borderColor = d.group === 'Access' ? 'border-green-500' : d.group === 'Watch' ? 'border-yellow-500' : 'border-red-600';
+                let badgeColor = d.group === 'Access' ? 'bg-green-500' : d.group === 'Watch' ? 'bg-yellow-500' : 'bg-red-600';
+                
+                html += `<div class="${bgColor} border-l-4 ${borderColor} p-4 mb-3 rounded-r-xl shadow-sm">
+                            <div class="flex justify-between items-center mb-1">
+                                <h4 class="font-bold ${colorClass} text-lg">${d.name}</h4>
+                                <span class="px-2 py-1 text-[10px] font-bold text-white rounded-full uppercase ${badgeColor}">${d.group}</span>
+                            </div>
+                            <p class="text-sm ${colorClass} opacity-90">${d.desc}</p>
+                         </div>`;
+            });
+            resultDiv.innerHTML = html;
+        }
+
+        function calculateEGFR() {
+            const age = parseFloat(document.getElementById('cgAge').value);
+            const weight = parseFloat(document.getElementById('cgWeight').value);
+            const cre = parseFloat(document.getElementById('cgCre').value);
+            const sex = document.getElementById('cgSex').value;
+            const resDiv = document.getElementById('egfrResult');
+
+            if(!age || !weight || !cre) {
+                resDiv.textContent = "Vui lòng nhập đủ thông tin!";
+                resDiv.classList.remove('hidden', 'text-blue-700', 'dark:text-blue-400');
+                resDiv.classList.add('text-red-500');
+                return;
+            }
+
+            let egfr = ((140 - age) * weight) / (0.814 * cre);
+            if (sex === 'female') egfr *= 0.85;
+
+            resDiv.classList.remove('hidden', 'text-red-500');
+            resDiv.classList.add('text-blue-700', 'dark:text-blue-400');
+            resDiv.innerHTML = `eGFR: ${egfr.toFixed(1)} <span class="text-sm font-normal">mL/phút</span>`;
+        }
+        function calculatePathogen() {
+            const pathogenId = document.getElementById('pathogenSelect').value;
+            const data = awareDB.pathogens[pathogenId];
+
+            let html = `
+                <div class="mb-4">
+                    <h2 class="text-xl font-bold text-red-800 dark:text-red-400 border-b-2 border-red-600 pb-2 inline-block">
+                        Kháng sinh điều trị: ${data.name}
+                    </h2>
+                </div>
+                
+                <div class="bg-red-50 dark:bg-red-900/20 text-red-900 dark:text-red-200 p-4 rounded-xl border border-red-200 dark:border-red-800 mb-6 shadow-sm">
+                    <h3 class="font-bold mb-1 flex items-center"><svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Nhận xét & Lâm sàng:</h3>
+                    <p class="text-sm leading-relaxed whitespace-pre-line">${data.consideration}</p>
+                    <p class="text-sm font-bold mt-2 text-red-700 dark:text-red-400">⏳ Thời gian điều trị dự kiến: ${data.duration}</p>
+                </div>
+            `;
+
+            const drawDrugCard = (drug, border, textColor, badgeBg) => {
+                const drugDictExact = awareDB.drugs.find(d => drug.drug.includes(d.name)) || {};
+                let warningHtml = '';
+                if(drugDictExact.warning) {
+                    warningHtml = `<div class="mt-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-800 rounded-lg p-3 text-sm text-red-800 dark:text-red-300 flex items-start shadow-inner"><span class="mr-2 text-lg">⚠️</span><span><strong>Cảnh báo:</strong> ${drugDictExact.warning}</span></div>`;
+                }
+                
+                return `
+                <div class="bg-white dark:bg-slate-800 border-l-4 ${border} p-4 mb-3 rounded-r-xl shadow-sm">
+                    <p class="font-bold ${textColor} dark:text-white text-lg">${drug.drug}</p>
+                    <p class="text-sm ${textColor} dark:text-gray-300 whitespace-pre-line mt-1">${drug.dose}</p>
+                    ${warningHtml}
+                </div>`;
+            };
+
+            if (data.watch && data.watch.length > 0) {
+                html += `<h4 class="font-bold text-yellow-700 dark:text-yellow-400 mt-5 mb-2 flex items-center"><span class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></span> NHÓM GIÁM SÁT (Watch)</h4>`;
+                data.watch.forEach(drug => html += drawDrugCard(drug, 'border-yellow-500', 'text-yellow-900', 'bg-yellow-500'));
+            }
+            if (data.reserve && data.reserve.length > 0) {
+                html += `<h4 class="font-bold text-red-700 dark:text-red-400 mt-5 mb-2 flex items-center"><span class="w-3 h-3 bg-red-600 rounded-full mr-2 animate-pulse"></span> NHÓM DỰ TRỮ (Reserve)</h4>`;
+                data.reserve.forEach(drug => html += drawDrugCard(drug, 'border-red-600', 'text-red-900', 'bg-red-600'));
+            }
+
+            const resultDiv = document.getElementById('result-pathogen');
+            resultDiv.innerHTML = html;
+            resultDiv.classList.remove('hidden');
+        }
+        // Khởi động
+        initApp();
+        searchDrug();
+    </script>
+    </body>
+</html>

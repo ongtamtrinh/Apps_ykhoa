@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bộ Công Cụ Y Khoa Lâm Sàng</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; }
+        .app-card { transition: all 0.2s ease-in-out; }
+        .app-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+    </style>
+</head>
+<body class="text-gray-800 pb-12">
+
+    <header class="bg-blue-800 text-white p-6 shadow-md">
+        <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <h1 class="text-2xl font-bold flex items-center">
+                    <span class="text-3xl mr-2">⚕️</span> Clinical Assistant Hub
+                </h1>
+                <p class="text-blue-200 text-sm mt-1">Hệ thống hỗ trợ ra quyết định lâm sàng</p>
+            </div>
+            
+            <div class="w-full md:w-1/3 relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </div>
+                <input type="text" id="searchInput" placeholder="Tìm kiếm công cụ..." class="w-full pl-10 pr-4 py-2 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 shadow-sm transition" oninput="renderApps()">
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto p-6 mt-4">
+        
+        <div class="flex flex-wrap gap-2 mb-6" id="categoryFilter">
+            <button onclick="setFilter('All', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-blue-600 text-white shadow-sm transition">Tất cả</button>
+            <button onclick="setFilter('Hồi Sức', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition">Hồi Sức</button>
+            <button onclick="setFilter('Truyền Nhiễm', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition">Truyền Nhiễm</button>
+            <button onclick="setFilter('Nội Tiết', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition">Nội Tiết</button>
+            <button onclick="setFilter('Tiêu Hóa', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition">Tiêu Hóa</button>
+        </div>
+
+        <div id="appGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            </div>
+
+        <div id="noResults" class="hidden text-center py-10 text-gray-500">
+            <p class="text-lg">Không tìm thấy công cụ phù hợp.</p>
+        </div>
+    </main>
+
+    <script>
+        // --- 1. DATA CÁC APP TỪ DANH SÁCH FILE CỦA BẠN ---
+        // Thêm app mới sau này chỉ cần thêm 1 dòng vào mảng này
+        const apps = [
+            { 
+                title: "Phân Tích Khí Máu (ABG)", 
+                desc: "Đánh giá oxy hóa, thăng bằng toan kiềm & khoảng trống Anion.", 
+                icon: "🫁", 
+                file: "apps/Phantich_KMDM.html", // Đã thêm apps/
+                category: "Hồi Sức",
+                color: "sky"
+            },
+            { 
+                title: "Vận Mạch & Co Bóp", 
+                desc: "Tính liều, tốc độ bơm tiêm điện & sinh y lệnh tự động.", 
+                icon: "🫀", 
+                file: "apps/Quanly_Vanmach&cobopcotim.html", // Đã thêm apps/
+                category: "Hồi Sức",
+                color: "red"
+            },
+            { 
+                title: "Sepsis Master SSC 2026", 
+                desc: "Quản lý Gói hồi sức 1h & 3h theo Surviving Sepsis Campaign.", 
+                icon: "🚨", 
+                file: "apps/Sepsis_Master_SSC2026.html", // Đã thêm apps/
+                category: "Hồi Sức",
+                color: "orange"
+            },
+            { 
+                title: "AWaRe Kháng Sinh 2023", 
+                desc: "Tra cứu phác đồ kháng sinh chuẩn WHO, tính liều eGFR.", 
+                icon: "💊", 
+                file: "apps/Luachon_KS_aware_WHO2023.html", // Đã thêm apps/
+                category: "Truyền Nhiễm",
+                color: "indigo"
+            },
+            { 
+                title: "Truyền Dịch SXH", 
+                desc: "Phác đồ truyền dịch Sốt xuất huyết Dengue theo BYT.", 
+                icon: "🦟", 
+                file: "apps/Tinhlieu_truyendichsxh.html", // Đã thêm apps/
+                category: "Truyền Nhiễm",
+                color: "blue"
+            },
+            { 
+                title: "Viêm Gan B & C", 
+                desc: "Chỉ định điều trị & phác đồ thuốc kháng virus trực tiếp.", 
+                icon: "🦠", 
+                file: "apps/Quanly_VGSVB&C.html", // Đã thêm apps/
+                category: "Tiêu Hóa",
+                color: "teal"
+            },
+            { 
+                title: "Điều Chỉnh Đường Huyết", 
+                desc: "Sàng lọc nội trú, phác đồ Insulin Basal-Bolus & y lệnh.", 
+                icon: "🩸", 
+                file: "apps/Dieuchinh_duonghuyet.html", // Đã thêm apps/
+                category: "Nội Tiết",
+                color: "purple"
+            }
+        ];
+        let currentCategory = 'All';
+
+        // --- 2. LOGIC LỌC & RENDER GIAO DIỆN ---
+        function setFilter(category, btnElement) {
+            currentCategory = category;
+            
+            // Đổi màu nút filter
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-blue-600', 'text-white');
+                btn.classList.add('bg-gray-200', 'text-gray-700');
+            });
+            btnElement.classList.remove('bg-gray-200', 'text-gray-700');
+            btnElement.classList.add('bg-blue-600', 'text-white');
+
+            renderApps();
+        }
+
+        function renderApps() {
+            const grid = document.getElementById('appGrid');
+            const noResults = document.getElementById('noResults');
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            
+            grid.innerHTML = '';
+            let hasResults = false;
+
+            apps.forEach(app => {
+                // Lọc theo Category và Search
+                const matchCategory = currentCategory === 'All' || app.category === currentCategory;
+                const matchSearch = app.title.toLowerCase().includes(searchQuery) || app.desc.toLowerCase().includes(searchQuery);
+
+                if (matchCategory && matchSearch) {
+                    hasResults = true;
+                    
+                    // Tạo thẻ Card
+                    const card = document.createElement('div');
+                    card.className = `app-card bg-white rounded-xl border border-gray-200 p-5 flex flex-col justify-between h-full border-t-4 border-t-${app.color}-500`;
+                    
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="text-3xl">${app.icon}</span>
+                                <span class="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">${app.category}</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-800 mb-2">${app.title}</h3>
+                            <p class="text-sm text-gray-500 line-clamp-2 leading-relaxed">${app.desc}</p>
+                        </div>
+                        <a href="./${app.file}" class="mt-4 block w-full text-center bg-gray-50 hover:bg-blue-50 text-blue-700 border border-gray-200 hover:border-blue-300 font-semibold py-2 rounded-lg transition">
+                            Mở ứng dụng →
+                        </a>
+                    `;
+                    grid.appendChild(card);
+                }
+            });
+
+            if (hasResults) {
+                grid.classList.remove('hidden');
+                noResults.classList.add('hidden');
+            } else {
+                grid.classList.add('hidden');
+                noResults.classList.remove('hidden');
+            }
+        }
+
+        // Render lần đầu khi load trang
+        renderApps();
+    </script>
+</body>
+</html>

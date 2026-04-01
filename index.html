@@ -35,6 +35,7 @@
         
         <div class="flex flex-wrap gap-2 mb-6" id="categoryFilter">
             <button onclick="setFilter('All', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-blue-600 text-white shadow-sm transition">Tất cả</button>
+            <button onclick="setFilter('Chung', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition">Chung</button>
             <button onclick="setFilter('Hồi Sức', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition">Hồi Sức</button>
             <button onclick="setFilter('Truyền Nhiễm', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition">Truyền Nhiễm</button>
             <button onclick="setFilter('Nội Tiết', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition">Nội Tiết</button>
@@ -53,6 +54,14 @@
         // --- 1. DATA CÁC APP TỪ DANH SÁCH FILE CỦA BẠN ---
         // Thêm app mới sau này chỉ cần thêm 1 dòng vào mảng này
         const apps = [
+            { 
+                title: "Bảng điểm lâm sàng", 
+                desc: "Phân loại nhanh chóng cho bệnh nhân trên thực hành lâm sàng", 
+                icon: "🔎", 
+                file: "Clinical_Scores.html", 
+                category: "Chung",
+                color: "grey"
+            },
             { 
                 title: "Rối Loạn Điện Giải", 
                 desc: "Xử trí Hạ/Tăng Na+, K+, Ca2+... Tính toán bù dịch & sinh y lệnh mẫu.", 

@@ -39,9 +39,11 @@
             <button onclick="setFilter('Hồi Sức', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition">Hồi Sức</button>
             <button onclick="setFilter('Truyền Nhiễm', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition">Truyền Nhiễm</button>
             <button onclick="setFilter('Nội Tiết', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition">Nội Tiết</button>
+            <button onclick="setFilter('Tim mạch', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition">Tim mạch</button>
             <button onclick="setFilter('Tiêu Hóa', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition">Tiêu Hóa</button>
             <button onclick="setFilter('Thận & Tiết niệu', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition">Thận & Tiết niệu</button>
             <button onclick="setFilter('Thần kinh', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition">Thần kinh</button>
+            <button onclick="setFilter('Ngoại', this)" class="filter-btn px-4 py-1.5 rounded-full text-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition">Ngoại</button>
         </div>
 
         <div id="appGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -167,6 +169,14 @@
                 file: "Quanly_dotquy.html",
                 category: "Thần kinh",
                 color: "pink"
+            },
+            { 
+                title: "Quản lý các thuốc tim mạch", 
+                desc: "Quản lý và theo dõi các loại thuốc tim mạch (THA, suy tim, hội chứng vành mạn).", 
+                icon: "🫀", 
+                file: "Quanly_thuoc_timmach.html",
+                category: "Tim mạch",
+                color: "red"
             }
         ];
         let currentCategory = 'All';

@@ -259,7 +259,7 @@ function switchTab(tabId) {
     renderData();
 }
 
-function saveHandover() {
+async function saveHandover() {
     const selectedTypes = Array.from(document.querySelectorAll('input[name="type"]:checked')).map(cb => cb.value);
     
     if(!formElements.name.value || !formElements.room.value || !formElements.diagnosis.value) {
@@ -269,30 +269,51 @@ function saveHandover() {
     const patientData = {
         id: isEditing ? parseInt(formElements.editingId.value) : Date.now(),
         name: formElements.name.value,
+        yob: formElements.yob.value, // Đảm bảo lấy được năm sinh
         room: formElements.room.value,
         priority: formElements.priority.value,
-        diagnosis: formElements.diagnosis.value, // Lưu Chẩn đoán
+        diagnosis: formElements.diagnosis.value,
         types: selectedTypes,
         s: formElements.s.value,
         b: formElements.b.value,
         a: formElements.a.value,
         r: formElements.r.value,
         isFlagged: formElements.isFlagged.checked,
-        timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+        timestamp: new Date().toLocaleString('vi-VN')
     };
 
-    if (isEditing) {
-        const index = patients.findIndex(p => p.id === patientData.id);
-        patients[index] = patientData;
-    } else {
-        patients.push(patientData);
+    // --- BẮT ĐẦU ĐOẠN GỬI LÊN CLOUD ---
+    const btn = document.getElementById('btn-save');
+    btn.innerText = "⏳ Đang đồng bộ...";
+    btn.disabled = true;
+
+    try {
+        // Gửi lên Google Sheets
+        await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify(patientData)
+        });
+
+        // Cập nhật mảng cục bộ
+        if (isEditing) {
+            const index = patients.findIndex(p => p.id === patientData.id);
+            patients[index] = patientData;
+        } else {
+            patients.push(patientData);
+        }
+
+        localStorage.setItem('sbar_patients', JSON.stringify(patients));
+        alert("✅ Đã lưu và đồng bộ thành công!");
+        cancelEdit();
+        switchTab('tab-1');
+    } catch (error) {
+        alert("❌ Lỗi đồng bộ: " + error);
+    } finally {
+        btn.innerText = "Lưu Diễn Tiến";
+        btn.disabled = false;
     }
-
-    localStorage.setItem('sbar_patients', JSON.stringify(patients));
-    cancelEdit();
-    switchTab('tab-1');
 }
-
 function renderData() {
     const tab1Container = document.querySelector('#tab-1 .grid');
     const tab3Container = document.getElementById('report-container');
@@ -534,6 +555,8 @@ async function refreshDataFromSheets() {
         console.error("Không thể đồng bộ:", e);
     }
 }
+// Tự động đồng bộ từ Sheets ngay khi mở trang web
+window.onload = refreshDataFromSheets;
 </script>
 </body>
 </html>

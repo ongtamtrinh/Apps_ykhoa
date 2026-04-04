@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <title>Ngộ độc cấp – Bảng điều khiển lâm sàng</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #f3f4f6;
+      --bg-soft: #e5e7eb;
+      --surface: #ffffff;
+      --surface-soft: #f9fafb;
+      --border: #d1d5db;
+      --border-soft: #e5e7eb;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --primary: #0f766e;
+      --primary-soft: #ccfbf1;
+      --danger: #b91c1c;
+      --danger-soft: #fee2e2;
+      --warn: #d97706;
+      --warn-soft: #fef3c7;
+      --ok: #15803d;
+      --ok-soft: #dcfce7;
+
+      --radius-sm: 0.375rem;
+      --radius-md: 0.5rem;
+      --radius-lg: 0.75rem;
+      --radius-pill: 999px;
+
+      --s1: 0.25rem;
+      --s2: 0.5rem;
+      --s3: 0.75rem;
+      --s4: 1rem;
+      --s5: 1.25rem;
+      --s6: 1.5rem;
+      --s8: 2rem;
+
+      --t-xs: 0.75rem;
+      --t-sm: 0.875rem;
+      --t-base: 1rem;
+      --t-lg: 1.125rem;
+      --t-xl: 1.5rem;
+
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.08);
+
+      --content-width: 1200px;
+      --transition: 170ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    * , *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at top, #e5f4ff 0, #f3f4f6 45%, #e5e7eb 100%);
+      color: var(--text);
+      line-height: 1.5;
+      padding: var(--s4);
+    }
+
+    .shell {
+      max-width: var(--content-width);
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--s4);
+      gap: var(--s3);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: var(--s3);
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: conic-gradient(from 200deg, #0f766e, #22c55e, #f97316, #0f766e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .brand-text-title {
+      font-size: var(--t-xl);
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-text-sub {
+      font-size: var(--t-sm);
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: var(--s2);
+      align-items: center;
+    }
+
+    button {
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .btn {
+      border-radius: var(--radius-pill);
+      padding: 0.35rem 0.9rem;
+      font-size: var(--t-sm);
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: background var(--transition), color var(--transition), border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+      background: transparent;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+      border-color: transparent;
+      box-shadow: var(--shadow-sm);
+    }
+    .btn-primary:hover {
+      background: #0d615b;
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-ghost {
+      background: rgba(255,255,255,0.7);
+      border-color: var(--border);
+      color: var(--text-muted);
+    }
+    .btn-ghost:hover {
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    /* SUMMARY STRIP */
+
+    .summary-strip {
+      background: rgba(15, 23, 42, 0.03);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-soft);
+      padding: var(--s3);
+      margin-bottom: var(--s3);
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.1fr);
+      gap: var(--s3);
+      backdrop-filter: blur(8px);
+    }
+
+    .summary-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    .summary-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.25rem;
+    }
+
+    .risk-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      border-radius: var(--radius-pill);
+      padding: 0.15rem 0.7rem;
+      font-size: var(--t-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .risk-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+    }
+
+    .risk-low {
+      background: var(--ok-soft);
+      color: var(--ok);
+    }
+    .risk-low .risk-dot { background: var(--ok); }
+
+    .risk-med {
+      background: var(--warn-soft);
+      color: var(--warn);
+    }
+    .risk-med .risk-dot { background: var(--warn); }
+
+    .risk-high {
+      background: var(--danger-soft);
+      color: var(--danger);
+    }
+    .risk-high .risk-dot { background: var(--danger); }
+
+    .summary-headline {
+      font-size: var(--t-lg);
+      font-weight: 600;
+    }
+
+    .summary-sub {
+      font-size: var(--t-sm);
+      color: var(--text-muted);
+    }
+
+    .summary-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      justify-content: flex-end;
+    }
+
+    .chip {
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-soft);
+      padding: 0.15rem 0.6rem;
+      font-size: var(--t-xs);
+      background: rgba(255,255,255,0.7);
+      color: var(--text-muted);
+    }
+
+    .summary-next-step {
+      font-size: var(--t-sm);
+      text-align: right;
+    }
+
+    /* TABS */
+
+    .tabs {
+      background: linear-gradient(to bottom, rgba(255,255,255,0.98), rgba(249,250,251,0.98));
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    .tab-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+      padding: var(--s2) var(--s3);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-soft);
+    }
+
+    .tab-btn {
+      border-radius: var(--radius-pill);
+      border: none;
+      padding: 0.4rem 0.9rem;
+      font-size: var(--t-sm);
+      color: var(--text-muted);
+      background: transparent;
+      white-space: nowrap;
+    }
+    .tab-btn:hover {
+      background: rgba(15, 118, 110, 0.06);
+      color: var(--primary);
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .tab-panels {
+      padding: var(--s4);
+    }
+
+    .tab-panel {
+      display: none;
+      animation: fadeIn 0.16s ease-out;
+    }
+    .tab-panel.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* GRID & CARDS */
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: var(--s3);
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--s2);
+    }
+
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-soft);
+      padding: var(--s3);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+      gap: var(--s2);
+    }
+
+    .card-title {
+      font-size: var(--t-sm);
+      font-weight: 600;
+    }
+
+    .card-sub {
+      font-size: var(--t-xs);
+      color: var(--text-muted);
+    }
+
+    /* INPUTS & CHOICES */
+
+    .field {
+      margin-bottom: var(--s2);
+    }
+
+    .field-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: var(--t-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.55rem;
+      font-size: var(--t-sm);
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .choice-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+
+    .choice-pill {
+      border-radius: var(--radius-pill);
+      border: 1px solid var(--border-soft);
+      padding: 0.2rem 0.6rem;
+      font-size: var(--t-xs);
+      color: var(--text-muted);
+      background: var(--surface-soft);
+      cursor: pointer;
+      user-select: none;
+      transition: background var(--transition), color var(--transition), border-color var(--transition), transform var(--transition);
+    }
+
+    .choice-pill.selected {
+      background: var(--primary-soft);
+      border-color: var(--primary);
+      color: var(--primary);
+      font-weight: 500;
+      transform: translateY(-1px);
+    }
+
+    .note {
+      font-size: var(--t-xs);
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+    }
+
+    .tag-soft {
+      border-radius: var(--radius-pill);
+      border: 1px dashed var(--border-soft);
+      padding: 0.15rem 0.6rem;
+      font-size: var(--t-xs);
+      color: var(--text-muted);
+      background: var(--surface-soft);
+    }
+
+    .badge-red {
+      border-radius: var(--radius-pill);
+      padding: 0.1rem 0.5rem;
+      font-size: var(--t-xs);
+      background: var(--danger-soft);
+      color: var(--danger);
+      border: 1px solid rgba(185, 28, 28, 0.4);
+    }
+
+    .badge-yellow {
+      border-radius: var(--radius-pill);
+      padding: 0.1rem 0.5rem;
+      font-size: var(--t-xs);
+      background: var(--warn-soft);
+      color: var(--warn);
+      border: 1px solid rgba(217, 119, 6, 0.4);
+    }
+
+    .badge-green {
+      border-radius: var(--radius-pill);
+      padding: 0.1rem 0.5rem;
+      font-size: var(--t-xs);
+      background: var(--ok-soft);
+      color: var(--ok);
+      border: 1px solid rgba(22, 163, 74, 0.4);
+    }
+
+    /* TABLE-LIKE LISTS */
+
+    .cause-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+    }
+
+    .cause-row {
+      display: grid;
+      grid-template-columns: 0.6fr 1.1fr 0.7fr;
+      gap: 0.4rem;
+      align-items: center;
+      font-size: var(--t-xs);
+    }
+
+    .cause-name {
+      font-weight: 600;
+    }
+
+    .cause-match-bar {
+      position: relative;
+      width: 100%;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--bg-soft);
+      overflow: hidden;
+    }
+
+    .cause-match-fill {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0%;
+      border-radius: inherit;
+      background: linear-gradient(to right, var(--primary), #22c55e);
+      transition: width var(--transition);
+    }
+
+    .cause-score-text {
+      text-align: right;
+      font-size: var(--t-xs);
+      color: var(--text-muted);
+    }
+
+    .treatment-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      font-size: var(--t-sm);
+    }
+
+    .treatment-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.4rem;
+    }
+
+    .tx-name {
+      font-weight: 500;
+    }
+
+    .tx-actions {
+      display: flex;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+
+    .tx-tag {
+      border-radius: var(--radius-pill);
+      padding: 0.1rem 0.55rem;
+      font-size: var(--t-xs);
+      border: 1px solid var(--border-soft);
+      background: var(--surface-soft);
+      color: var(--text-muted);
+    }
+
+    /* RESPONSIVE */
+
+    @media (max-width: 900px) {
+      body { padding: var(--s3); }
+      header { flex-direction: column; align-items: flex-start; }
+      .summary-strip {
+        grid-template-columns: 1fr;
+      }
+      .summary-right { align-items: flex-start; }
+      .summary-next-step { text-align: left; }
+      .summary-tags { justify-content: flex-start; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .cause-row {
+        grid-template-columns: 0.7fr 1.1fr;
+        grid-template-rows: auto auto;
+      }
+      .cause-score-text { grid-column: 1 / -1; text-align: left; }
+    }
+
+    @media (max-width: 640px) {
+      .grid-3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="brand">
+      <div class="brand-icon" aria-hidden="true">Tx</div>
+      <div>
+        <div class="brand-text-title">Ngộ độc cấp – Dashboard</div>
+        <div class="brand-text-sub">Treat the person, not the poison</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-ghost" id="btn-clear">Ca mới</button>
+    </div>
+  </header>
+
+  <!-- SUMMARY -->
+  <section class="summary-strip" id="summary-strip">
+    <div class="summary-left">
+      <div class="risk-pill risk-low" id="risk-pill">
+        <div class="risk-dot"></div>
+        <span id="risk-pill-text">Nguy cơ thấp</span>
+      </div>
+      <div class="summary-headline" id="summary-headline">
+        Chưa ghi nhận dấu hiệu đe dọa tính mạng ngay lập tức
+      </div>
+      <div class="summary-sub" id="summary-sub">
+        Nhập nhanh tri giác, hô hấp, huyết áp, thời gian phơi nhiễm và vài dấu hiệu key – hệ thống sẽ gợi ý nguyên nhân, antidote và ICU.
+      </div>
+    </div>
+    <div class="summary-right">
+      <div class="summary-next-step" id="summary-next">
+        Gợi ý: rà ABCDE, sau đó mở tab <strong>Nguyên nhân</strong> và <strong>Cận lâm sàng</strong>.
+      </div>
+      <div class="summary-tags" id="summary-tags">
+        <span class="chip">Chưa rõ độc chất</span>
+        <span class="chip">Ưu tiên: ABCDE</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- TABS -->
+  <section class="tabs">
+    <div class="tab-list">
+      <button class="tab-btn active" data-tab="overview">Tổng quan</button>
+      <button class="tab-btn" data-tab="abcde">ABCDE</button>
+      <button class="tab-btn" data-tab="cause">Nguyên nhân</button>
+      <button class="tab-btn" data-tab="labs">Cận lâm sàng</button>
+      <button class="tab-btn" data-tab="tx">Điều trị & chuyển tuyến</button>
+    </div>
+
+    <div class="tab-panels">
+      <!-- TAB 1: TỔNG QUAN -->
+      <div class="tab-panel active" id="tab-overview">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Thông tin ca</div>
+              <div class="card-sub">Điền tối thiểu</div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Tuổi</span><span></span></div>
+              <input id="age" type="number" min="0" max="120" placeholder="Ví dụ: 35">
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Giờ từ phơi nhiễm</span><span></span></div>
+              <input id="timeHours" type="number" min="0" step="0.5" placeholder="Ví dụ: 2">
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Gợi ý tác nhân</span><span></span></div>
+              <select id="agentHint">
+                <option value="">Chưa rõ / hỗn hợp</option>
+                <option value="opioid">Opioid</option>
+                <option value="sedative">An thần / gây ngủ</option>
+                <option value="cholinergic">Cholinergic (phospho hữu cơ, carbamate)</option>
+                <option value="anticholinergic">Anticholinergic</option>
+                <option value="sympathomimetic">Giao cảm (amphetamines, cocaine)</option>
+                <option value="tca">TCA / Na-blocker</option>
+                <option value="ccb">CCB / Beta-blocker</option>
+                <option value="paracetamol">Paracetamol</option>
+                <option value="salicylate">Salicylate</option>
+                <option value="caustic">Ăn mòn</option>
+              </select>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Bối cảnh</span><span></span></div>
+              <textarea id="context" placeholder="VD: Nông dân phun thuốc, thanh niên dùng heroin, uống 20 viên amlodipine..."></textarea>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Sinh hiệu & tri giác</div>
+              <div class="card-sub">Chỉ lấy vài số</div>
+            </div>
+            <div class="grid-3">
+              <div class="field">
+                <div class="field-label"><span>SBP</span><span>mmHg</span></div>
+                <input id="sbp" type="number" min="0" max="300" placeholder="80">
+              </div>
+              <div class="field">
+                <div class="field-label"><span>Nhịp tim</span><span>/ph</span></div>
+                <input id="hr" type="number" min="0" max="250" placeholder="120">
+              </div>
+              <div class="field">
+                <div class="field-label"><span>Nhiệt</span><span>°C</span></div>
+                <input id="temp" type="number" step="0.1" min="30" max="43" placeholder="38.9">
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-label"><span>Tri giác</span><span></span></div>
+              <div class="choice-row" data-field="consciousness">
+                <div class="choice-pill" data-value="tinh">Tỉnh</div>
+                <div class="choice-pill" data-value="kích động">Kích động</div>
+                <div class="choice-pill" data-value="lơ mơ">Lơ mơ</div>
+                <div class="choice-pill" data-value="hôn mê">Hôn mê</div>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-label"><span>Hô hấp</span><span></span></div>
+              <div class="choice-row" data-field="resp">
+                <div class="choice-pill" data-value="ổn">Ổn</div>
+                <div class="choice-pill" data-value="nhanh">Thở nhanh</div>
+                <div class="choice-pill" data-value="chậm">Thở chậm</div>
+                <div class="choice-pill" data-value="suy">Suy hô hấp</div>
+              </div>
+            </div>
+
+            <div class="field">
+              <div class="field-label"><span>Co giật</span><span></span></div>
+              <div class="choice-row" data-field="seizure">
+                <div class="choice-pill" data-value="không">Không</div>
+                <div class="choice-pill" data-value="có">Có / gần đây</div>
+              </div>
+            </div>
+
+            <div class="note">
+              Nguy cơ cao nếu: hôn mê, suy hô hấp, co giật, SBP &lt; 90, nhiệt ≥ 39.5.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: ABCDE -->
+      <div class="tab-panel" id="tab-abcde">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">A – Airway</div>
+              <div class="card-sub">Đường thở</div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Đường thở</span></div>
+              <div class="choice-row" data-field="airway">
+                <div class="choice-pill" data-value="ổn">Tự bảo vệ</div>
+                <div class="choice-pill" data-value="nguy cơ">Nguy cơ (nôn, lưỡi tụt...)</div>
+                <div class="choice-pill" data-value="mất">Mất bảo vệ</div>
+              </div>
+            </div>
+            <div class="note">
+              <span class="badge-red">Mất bảo vệ</span> → chuẩn bị NKQ sớm, đặc biệt nếu hôn mê / ăn mòn.
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">B – Breathing</div>
+              <div class="card-sub">Hô hấp</div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Hỗ trợ</span></div>
+              <div class="choice-row" data-field="breathSupport">
+                <div class="choice-pill" data-value="không">Chưa cần</div>
+                <div class="choice-pill" data-value="oxy">Oxy mặt nạ</div>
+                <div class="choice-pill" data-value="bvm">Bóp bóng</div>
+                <div class="choice-pill" data-value="thở máy">Thở máy</div>
+              </div>
+            </div>
+            <div class="note">
+              Ngộ độc opioid: suy hô hấp + co đồng tử → ưu tiên naloxone trước khi NKQ nếu có thể.
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">C – Circulation</div>
+              <div class="card-sub">Tuần hoàn</div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Sốc / HA thấp</span></div>
+              <div class="choice-row" data-field="shock">
+                <div class="choice-pill" data-value="không">Không</div>
+                <div class="choice-pill" data-value="có">Có / nghi sốc</div>
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Loạn nhịp nặng</span></div>
+              <div class="choice-row" data-field="dysrhythmia">
+                <div class="choice-pill" data-value="không">Không</div>
+                <div class="choice-pill" data-value="có">Có</div>
+              </div>
+            </div>
+            <div class="note">
+              Sốc + QRS rộng / QT dài → nghĩ TCA / Na-blocker hoặc độc tim nặng.
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">D – Disability</div>
+              <div class="card-sub">Đường huyết – co giật – nhiệt</div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Đã đo glucose?</span></div>
+              <div class="choice-row" data-field="bglDone">
+                <div class="choice-pill" data-value="chưa">Chưa</div>
+                <div class="choice-pill" data-value="bình thường">Bình thường</div>
+                <div class="choice-pill" data-value="thấp">Thấp</div>
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Nhiệt</span></div>
+              <div class="choice-row" data-field="tempFlag">
+                <div class="choice-pill" data-value="bt">BT / &lt; 38.5</div>
+                <div class="choice-pill" data-value="sốt">≥ 38.5</div>
+                <div class="choice-pill" data-value="sốt cao">≥ 39.5</div>
+              </div>
+            </div>
+            <div class="note">
+              Hạ đường huyết, co giật, sốt cao → luôn nâng mức nguy cơ và cân nhắc ICU.
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">E – Emergency antidote / khử nhiễm</div>
+              <div class="card-sub">Song song ABCD</div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Đã dùng antidote?</span></div>
+              <div class="choice-row" data-field="antidoteGiven">
+                <div class="choice-pill" data-value="chưa">Chưa</div>
+                <div class="choice-pill" data-value="naloxone">Naloxone</div>
+                <div class="choice-pill" data-value="atropine">Atropine</div>
+                <div class="choice-pill" data-value="nac">NAC</div>
+                <div class="choice-pill" data-value="bicarb">NaHCO3</div>
+              </div>
+            </div>
+            <div class="note">
+              Khử nhiễm tiêu hoá: chỉ khi an toàn đường thở và lợi ích vượt trội nguy cơ.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: NGUYÊN NHÂN -->
+      <div class="tab-panel" id="tab-cause">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Dấu hiệu key</div>
+              <div class="card-sub">Tick nhanh</div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Đồng tử</span></div>
+              <div class="choice-row" data-field="pupil">
+                <div class="choice-pill" data-value="bt">BT / không rõ</div>
+                <div class="choice-pill" data-value="co">Co nhỏ</div>
+                <div class="choice-pill" data-value="giãn">Giãn</div>
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Da – niêm</span></div>
+              <div class="choice-row" data-field="skin">
+                <div class="choice-pill" data-value="bt">BT</div>
+                <div class="choice-pill" data-value="ướt">Âm ướt / mồ hôi</div>
+                <div class="choice-pill" data-value="khô">Khô nóng</div>
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Tiết dịch / nhu động</span></div>
+              <div class="choice-row" data-field="secretions">
+                <div class="choice-pill" data-value="bt">BT</div>
+                <div class="choice-pill" data-value="tăng">Tăng tiết / tiêu chảy</div>
+                <div class="choice-pill" data-value="giảm">Bí tiểu / giảm nhu động</div>
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Tim mạch</span></div>
+              <div class="choice-row" data-field="heart">
+                <div class="choice-pill" data-value="bt">BT</div>
+                <div class="choice-pill" data-value="nhanh">Nhịp nhanh / tăng HA</div>
+                <div class="choice-pill" data-value="chậm">Nhịp chậm / HA thấp</div>
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Thần kinh</span></div>
+              <div class="choice-row" data-field="neuro">
+                <div class="choice-pill" data-value="bt">BT</div>
+                <div class="choice-pill" data-value="ức chế">Ức chế</div>
+                <div class="choice-pill" data-value="kích thích">Kích thích / ảo giác</div>
+                <div class="choice-pill" data-value="co giật">Co giật</div>
+              </div>
+            </div>
+            <div class="note">
+              Mỗi tick sẽ cập nhật bảng nguyên nhân gợi ý ở bên phải.
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Nguyên nhân gợi ý (top 3)</div>
+              <div class="card-sub">Pattern → hành động</div>
+            </div>
+            <div id="cause-output">
+              <div class="note">
+                Nhập thêm dấu hiệu để hệ thống chấm điểm nguyên nhân (opioid, cholinergic, anticholinergic, giao cảm, an thần, TCA/Na-blocker, CCB/BB, paracetamol, salicylate, ăn mòn...).
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: CẬN LÂM SÀNG -->
+      <div class="tab-panel" id="tab-labs">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Screening tests</div>
+              <div class="card-sub">ECG – BGL – paracetamol</div>
+            </div>
+            <div class="grid-3">
+              <div class="field">
+                <div class="field-label"><span>QRS</span><span>ms</span></div>
+                <input id="qrs" type="number" min="40" max="300" placeholder="Ví dụ: 120">
+              </div>
+              <div class="field">
+                <div class="field-label"><span>QTc</span><span>ms</span></div>
+                <input id="qtc" type="number" min="300" max="700" placeholder="Ví dụ: 520">
+              </div>
+              <div class="field">
+                <div class="field-label"><span>Paracetamol máu</span></div>
+                <div class="choice-row" data-field="apapLevel">
+                  <div class="choice-pill" data-value="chưa">Chưa làm</div>
+                  <div class="choice-pill" data-value="âm">Âm tính</div>
+                  <div class="choice-pill" data-value="dương">Dương / cao</div>
+                </div>
+              </div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>Toan chuyển hóa</span></div>
+              <div class="choice-row" data-field="acidosis">
+                <div class="choice-pill" data-value="không">Không / nhẹ</div>
+                <div class="choice-pill" data-value="có">Có / đáng kể</div>
+              </div>
+            </div>
+            <div class="note">
+              QRS ≥ 100 ms, QTc dài, toan chuyển hóa, lactate cao → luôn nâng mức nguy cơ và gợi ý độc chất nguy hiểm trên tim / đa cơ quan.
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Red flag ECG / sinh hoá</div>
+              <div class="card-sub">Tự động cập nhật</div>
+            </div>
+            <div id="lab-flags" class="treatment-list">
+              <div class="note">
+                Nhập QRS, QTc, paracetamol, trạng thái toan kiềm – hệ thống sẽ nêu các red flag và liên kết với nguyên nhân / antidote.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: ĐIỀU TRỊ & CHUYỂN TUYẾN -->
+      <div class="tab-panel" id="tab-tx">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Antidote / xử trí đặc hiệu</div>
+              <div class="card-sub">Theo pattern hiện tại</div>
+            </div>
+            <div id="tx-antidote" class="treatment-list">
+              <div class="note">
+                Khi đã có nguyên nhân gợi ý + red flag Cận lâm sàng, đây sẽ là danh sách ngắn gọn: “pattern → thuốc / can thiệp cụ thể”.
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">ICU / theo dõi / xuất viện</div>
+              <div class="card-sub">Disposition</div>
+            </div>
+            <div id="tx-disposition" class="treatment-list">
+              <div class="note">
+                Dựa trên nguy cơ, nhu cầu kiểm soát đường thở, vận mạch, lọc máu, diễn tiến trong 1–2 giờ đầu..., hệ thống sẽ gợi ý ICU, nội trú theo dõi hay có thể xuất viện kèm lời nhắc.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+<script>
+  // --- GLOBAL STATE ---
+  const caseState = {
+    age: null,
+    timeHours: null,
+    agentHint: '',
+    sbp: null,
+    hr: null,
+    temp: null,
+    consciousness: null,
+    resp: null,
+    seizure: null,
+    airway: null,
+    breathSupport: null,
+    shock: null,
+    dysrhythmia: null,
+    bglDone: null,
+    tempFlag: null,
+    antidoteGiven: null,
+    pupil: null,
+    skin: null,
+    secretions: null,
+    heart: null,
+    neuro: null,
+    qrs: null,
+    qtc: null,
+    apapLevel: null,
+    acidosis: null
+  };
+
+  // --- TAB LOGIC ---
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tab = btn.getAttribute('data-tab');
+      tabBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      panels.forEach(p => p.classList.toggle('active', p.id === 'tab-' + tab));
+    });
+  });
+
+  // --- CHOICE PILL LOGIC ---
+  document.querySelectorAll('.choice-row').forEach(row => {
+    const field = row.getAttribute('data-field');
+    row.addEventListener('click', (e) => {
+      const pill = e.target.closest('.choice-pill');
+      if (!pill) return;
+      const value = pill.getAttribute('data-value');
+      row.querySelectorAll('.choice-pill').forEach(p => p.classList.remove('selected'));
+      pill.classList.add('selected');
+
+      if (field && caseState.hasOwnProperty(field)) {
+        caseState[field] = value;
+        updateAll();
+      }
+    });
+  });
+
+  // --- BASIC INPUTS ---
+  const ageInput = document.getElementById('age');
+  const timeInput = document.getElementById('timeHours');
+  const agentInput = document.getElementById('agentHint');
+  const sbpInput = document.getElementById('sbp');
+  const hrInput = document.getElementById('hr');
+  const tempInput = document.getElementById('temp');
+  const qrsInput = document.getElementById('qrs');
+  const qtcInput = document.getElementById('qtc');
+
+  [ageInput, timeInput, sbpInput, hrInput, tempInput, qrsInput, qtcInput].forEach(el => {
+    if (!el) return;
+    el.addEventListener('input', () => {
+      const id = el.id;
+      const val = el.value === '' ? null : Number(el.value);
+      if (id === 'age') caseState.age = val;
+      if (id === 'timeHours') caseState.timeHours = val;
+      if (id === 'sbp') caseState.sbp = val;
+      if (id === 'hr') caseState.hr = val;
+      if (id === 'temp') caseState.temp = val;
+      if (id === 'qrs') caseState.qrs = val;
+      if (id === 'qtc') caseState.qtc = val;
+      updateAll();
+    });
+  });
+
+  agentInput.addEventListener('change', () => {
+    caseState.agentHint = agentInput.value;
+    updateAll();
+  });
+
+  // --- CORE UPDATE PIPELINE ---
+  function updateAll() {
+    updateRisk();
+    const causeScores = updateCause();
+    updateLabFlags();
+    updateTx(causeScores);
+  }
+
+  // --- RISK ENGINE ---
+  function updateRisk() {
+    const { sbp, hr, temp, consciousness, resp, seizure, shock, dysrhythmia, tempFlag, bglDone, acidosis } = caseState;
+    let level = 'low';
+
+    const hypotension = sbp !== null && sbp < 90;
+    const tachy = hr !== null && hr > 120;
+    const brady = hr !== null && hr < 50;
+    const hyperthermia = temp !== null && temp >= 39.5;
+
+    const highRisk =
+      consciousness === 'hôn mê' ||
+      resp === 'suy' ||
+      seizure === 'có' ||
+      hypotension ||
+      hyperthermia ||
+      shock === 'có' ||
+      dysrhythmia === 'có' ||
+      acidosis === 'có';
+
+    const mediumRisk =
+      consciousness === 'lơ mơ' ||
+      resp === 'nhanh' ||
+      tempFlag === 'sốt' ||
+      tachy ||
+      brady;
+
+    if (highRisk) level = 'high';
+    else if (mediumRisk) level = 'med';
+
+    const pill = document.getElementById('risk-pill');
+    const pillText = document.getElementById('risk-pill-text');
+    pill.classList.remove('risk-low', 'risk-med', 'risk-high');
+    if (level === 'high') {
+      pill.classList.add('risk-high');
+      pillText.textContent = 'Nguy cơ cao';
+    } else if (level === 'med') {
+      pill.classList.add('risk-med');
+      pillText.textContent = 'Nguy cơ trung bình';
+    } else {
+      pill.classList.add('risk-low');
+      pillText.textContent = 'Nguy cơ thấp';
+    }
+
+    const headline = document.getElementById('summary-headline');
+    const sub = document.getElementById('summary-sub');
+    const next = document.getElementById('summary-next');
+    const tags = document.getElementById('summary-tags');
+    tags.innerHTML = '';
+
+    if (level === 'high') {
+      headline.textContent = 'Nguy cơ cao – ưu tiên hồi sức & ICU';
+      sub.textContent = 'Có dấu hiệu đe dọa tính mạng (đường thở, hô hấp, tuần hoàn, co giật, sốc hoặc rối loạn toan chuyển hóa). Tập trung ABCDE, ICU và điều trị đặc hiệu.';
+      next.innerHTML = 'Gợi ý: ABCDE ngay, làm <strong>ECG – BGL – khí máu – paracetamol</strong>, sau đó mở tab <strong>Nguyên nhân</strong> và <strong>Điều trị</strong>.';
+      addTag(tags, 'Đang ở mức nguy cơ cao');
+      if (hypotension || shock === 'có') addTag(tags, 'Sốc / HA thấp');
+      if (resp === 'suy') addTag(tags, 'Nguy cơ cần kiểm soát đường thở');
+      if (seizure === 'có') addTag(tags, 'Có / gần đây co giật');
+      if (acidosis === 'có') addTag(tags, 'Toan chuyển hóa');
+    } else if (level === 'med') {
+      headline.textContent = 'Nguy cơ trung bình – cần theo dõi sát';
+      sub.textContent = 'Có bất thường sinh hiệu hoặc tri giác nhưng chưa đủ tiêu chuẩn sốc / suy đa cơ quan. Cần hoàn thiện screening tests và theo dõi diễn tiến 1–2 giờ đầu.';
+      next.innerHTML = 'Gợi ý: rà <strong>ABCDE</strong>, hoàn thành <strong>ECG – BGL – paracetamol</strong>, xem tab <strong>Nguyên nhân</strong> để tìm pattern.';
+      addTag(tags, 'Nguy cơ trung bình');
+      if (tachy) addTag(tags, 'Nhịp nhanh');
+      if (brady) addTag(tags, 'Nhịp chậm');
+      if (tempFlag === 'sốt') addTag(tags, 'Sốt ≥ 38.5');
+    } else {
+      headline.textContent = 'Nguy cơ thấp / ổn định tạm thời';
+      sub.textContent = 'Chưa ghi nhận dấu hiệu đe dọa tính mạng ngay. Tuy vậy ngộ độc là bệnh động học – cần tiếp tục sàng lọc, tìm nguyên nhân và theo dõi diễn tiến.';
+      next.innerHTML = 'Gợi ý: hoàn thành <strong>ECG – BGL – paracetamol</strong>, sau đó dùng tab <strong>Nguyên nhân</strong> để định hướng, và tab <strong>Điều trị</strong> để lên kế hoạch.';
+      addTag(tags, 'Nguy cơ thấp tạm thời');
+    }
+  }
+
+  function addTag(container, text) {
+    const span = document.createElement('span');
+    span.className = 'chip';
+    span.textContent = text;
+    container.appendChild(span);
+  }
+
+  // --- CAUSE ENGINE ---
+  const causeMap = [
+    { key: 'opioid', name: 'Opioid', action: 'Naloxone, hỗ trợ hô hấp' },
+    { key: 'sedative', name: 'An thần / gây ngủ', action: 'BZD hỗ trợ, bảo vệ đường thở' },
+    { key: 'cholinergic', name: 'Cholinergic', action: 'Atropine ± pralidoxime' },
+    { key: 'anticholinergic', name: 'Anticholinergic', action: 'Làm mát, an thần, theo dõi' },
+    { key: 'sympathomimetic', name: 'Giao cảm', action: 'BZD, kiểm soát nhiệt & HA' },
+    { key: 'tca', name: 'TCA / Na-blocker', action: 'NaHCO3, theo dõi ECG, ICU' },
+    { key: 'ccb', name: 'CCB / Beta-blocker', action: 'Calci, insulin liều cao, glucagon' },
+    { key: 'paracetamol', name: 'Paracetamol liều cao', action: 'NAC đủ phác đồ, theo dõi gan' },
+    { key: 'salicylate', name: 'Salicylate', action: 'Kiềm hóa nước tiểu, tránh giảm thông khí' },
+    { key: 'caustic', name: 'Ăn mòn', action: 'Bảo vệ đường thở, nội soi / ngoại khoa' }
+  ];
+
+  function updateCause() {
+    const scores = {};
+    causeMap.forEach(c => scores[c.key] = 0);
+
+    const s = caseState;
+
+    // Agent hint
+    if (s.agentHint && scores.hasOwnProperty(s.agentHint)) {
+      scores[s.agentHint] += 3;
+    }
+
+    // Opioid pattern
+    if (s.pupil === 'co') scores.opioid += 2;
+    if (s.resp === 'chậm' || s.resp === 'suy') scores.opioid += 2;
+    if (s.consciousness === 'lơ mơ' || s.consciousness === 'hôn mê') scores.opioid += 1;
+
+    // Sedative
+    if (s.neuro === 'ức chế' && (!s.pupil || s.pupil === 'bt')) scores.sedative += 2;
+    if (s.resp === 'chậm' || s.resp === 'suy') scores.sedative += 1;
+
+    // Cholinergic
+    if (s.secretions === 'tăng') scores.cholinergic += 2;
+    if (s.pupil === 'co') scores.cholinergic += 1;
+    if (s.resp === 'nhanh' || s.resp === 'suy') scores.cholinergic += 1;
+
+    // Anticholinergic
+    if (s.skin === 'khô') scores.anticholinergic += 2;
+    if (s.pupil === 'giãn') scores.anticholinergic += 1;
+    if (s.secretions === 'giảm') scores.anticholinergic += 1;
+    if (s.neuro === 'kích thích') scores.anticholinergic += 1;
+
+    // Sympathomimetic
+    if (s.heart === 'nhanh') scores.sympathomimetic += 2;
+    if (s.skin === 'ướt') scores.sympathomimetic += 1;
+    if (s.neuro === 'kích thích') scores.sympathomimetic += 1;
+    if (s.tempFlag === 'sốt' || s.tempFlag === 'sốt cao') scores.sympathomimetic += 1;
+
+    // TCA / Na-blocker
+    if (s.qrs !== null && s.qrs >= 100) scores.tca += 3;
+    if (s.acidosis === 'có') scores.tca += 1;
+    if (s.dysrhythmia === 'có' || (s.shock === 'có')) scores.tca += 1;
+
+    // CCB / BB
+    if (s.heart === 'chậm') scores.ccb += 2;
+    if (s.sbp !== null && s.sbp < 90) scores.ccb += 2;
+    if (s.timeHours !== null && s.timeHours >= 4) scores.ccb += 1;
+
+    // Paracetamol
+    if (s.apapLevel === 'dương') scores.paracetamol += 4;
+    if (s.agentHint === 'paracetamol') scores.paracetamol += 2;
+
+    // Salicylate
+    if (s.acidosis === 'có' && s.resp === 'nhanh') scores.salicylate += 2;
+    if (s.tempFlag === 'sốt' || s.tempFlag === 'sốt cao') scores.salicylate += 1;
+    if (s.agentHint === 'salicylate') scores.salicylate += 2;
+
+    // Caustic
+    if (s.agentHint === 'caustic') scores.caustic += 3;
+    if (s.airway === 'nguy cơ' || s.airway === 'mất') scores.caustic += 1;
+
+    const causeList = Object.entries(scores)
+      .filter(([_, score]) => score > 0)
+      .sort((a, b) => b[1] - a[1]);
+
+    const container = document.getElementById('cause-output');
+    container.innerHTML = '';
+
+    if (!causeList.length) {
+      const note = document.createElement('div');
+      note.className = 'note';
+      note.textContent = 'Chưa đủ dữ kiện để xếp hạng nguyên nhân. Bổ sung thêm dấu hiệu (đồng tử, da-niêm, tim mạch, thần kinh) và ECG / paracetamol.';
+      container.appendChild(note);
+      return scores;
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'cause-list';
+
+    const maxScore = causeList[0][1] || 1;
+    causeList.slice(0, 3).forEach(([key, score]) => {
+      const meta = causeMap.find(c => c.key === key);
+      if (!meta) return;
+      const row = document.createElement('div');
+      row.className = 'cause-row';
+
+      const name = document.createElement('div');
+      name.className = 'cause-name';
+      name.textContent = meta.name;
+
+      const pattern = document.createElement('div');
+      pattern.className = 'tag-soft';
+      pattern.textContent = patternText(key);
+
+      const barWrap = document.createElement('div');
+      barWrap.className = 'cause-match-bar';
+      const barFill = document.createElement('div');
+      barFill.className = 'cause-match-fill';
+      const pct = Math.round((score / maxScore) * 100);
+      barFill.style.width = pct + '%';
+      barWrap.appendChild(barFill);
+
+      const scoreText = document.createElement('div');
+      scoreText.className = 'cause-score-text';
+      scoreText.textContent = meta.action;
+
+      row.appendChild(name);
+      row.appendChild(barWrap);
+      row.appendChild(scoreText);
+
+      // Pattern row below
+      const patternRow = document.createElement('div');
+      patternRow.style.gridColumn = '1 / -1';
+      patternRow.style.fontSize = '0.7rem';
+      patternRow.style.color = '#6b7280';
+      patternRow.textContent = patternText(key);
+
+      wrapper.appendChild(row);
+      wrapper.appendChild(patternRow);
+    });
+
+    container.appendChild(wrapper);
+    return scores;
+  }
+
+  function patternText(key) {
+    switch (key) {
+      case 'opioid':
+        return 'Co đồng tử + ức chế TKTW + thở chậm / suy.';
+      case 'sedative':
+        return 'Ức chế TKTW, sinh hiệu ít kích thích, hô hấp chậm/ổn.';
+      case 'cholinergic':
+        return 'Tăng tiết, tiêu chảy, co đồng tử, co thắt phế quản.';
+      case 'anticholinergic':
+        return 'Da khô nóng, giãn đồng tử, bí tiểu, kích thích / ảo giác.';
+      case 'sympathomimetic':
+        return 'Vã mồ hôi, nhịp nhanh, tăng HA, kích thích, tăng thân nhiệt.';
+      case 'tca':
+        return 'QRS rộng, QT dài, tụt HA, loạn nhịp, co giật.';
+      case 'ccb':
+        return 'Nhịp chậm, tụt HA, shock, có thể khởi phát muộn.';
+      case 'paracetamol':
+        return 'Uống liều cao, paracetamol máu cao, có nguy cơ suy gan muộn.';
+      case 'salicylate':
+        return 'Thở nhanh, toan chuyển hóa, có thể tăng thân nhiệt.';
+      case 'caustic':
+        return 'Đau / bỏng miệng – họng, nguy cơ phù nề đường thở, thủng.';
+      default:
+        return '';
+    }
+  }
+
+  // --- LAB FLAGS ---
+  function updateLabFlags() {
+    const s = caseState;
+    const cont = document.getElementById('lab-flags');
+    cont.innerHTML = '';
+
+    const flags = [];
+
+    if (s.qrs !== null && s.qrs >= 100) {
+      flags.push({
+        type: 'red',
+        text: `QRS ${s.qrs} ms – nghĩ TCA / Na-blocker → NaHCO3, ICU, theo dõi ECG sát.`
+      });
+    }
+    if (s.qtc !== null && s.qtc >= 480) {
+      flags.push({
+        type: 'yellow',
+        text: `QTc ${s.qtc} ms – nguy cơ Torsades de Pointes, tránh thuốc kéo dài QT thêm.`
+      });
+    }
+    if (s.apapLevel === 'dương') {
+      flags.push({
+        type: 'green',
+        text: 'Paracetamol máu cao – bắt đầu / tiếp tục NAC đủ phác đồ, theo dõi men gan.'
+      });
+    }
+    if (s.acidosis === 'có') {
+      flags.push({
+        type: 'red',
+        text: 'Toan chuyển hóa – cân nhắc salicylate, rượu công nghiệp, shock, cyanide...'
+      });
+    }
+
+    if (!flags.length) {
+      const note = document.createElement('div');
+      note.className = 'note';
+      note.textContent = 'Chưa ghi nhận red flag rõ. Nhập thêm QRS, QTc, paracetamol và trạng thái toan chuyển hóa để gợi ý.';
+      cont.appendChild(note);
+      return;
+    }
+
+    flags.forEach(f => {
+      const row = document.createElement('div');
+      row.className = 'treatment-row';
+      const span = document.createElement('span');
+      span.textContent = f.text;
+      const badge = document.createElement('span');
+      if (f.type === 'red') badge.className = 'badge-red';
+      else if (f.type === 'yellow') badge.className = 'badge-yellow';
+      else badge.className = 'badge-green';
+      badge.textContent = f.type === 'red' ? 'RED FLAG' : f.type === 'yellow' ? 'CẢNH GIÁC' : 'HƯỚNG ĐÍCH';
+      row.appendChild(span);
+      row.appendChild(badge);
+      cont.appendChild(row);
+    });
+  }
+
+  // --- TX SUGGESTIONS ---
+  function updateTx(causeScores) {
+    const s = caseState;
+    const txAnt = document.getElementById('tx-antidote');
+    const txDisp = document.getElementById('tx-disposition');
+    txAnt.innerHTML = '';
+    txDisp.innerHTML = '';
+
+    const sorted = Object.entries(causeScores || {})
+      .filter(([_, score]) => score > 0)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3);
+
+    if (!sorted.length) {
+      const note = document.createElement('div');
+      note.className = 'note';
+      note.textContent = 'Chưa có nguyên nhân nổi trội. Hoàn thiện pattern lâm sàng và cận lâm sàng để gợi ý antidote / xử trí đặc hiệu.';
+      txAnt.appendChild(note);
+    } else {
+      sorted.forEach(([key]) => {
+        const meta = causeMap.find(c => c.key === key);
+        if (!meta) return;
+        const row = document.createElement('div');
+        row.className = 'treatment-row';
+
+        const left = document.createElement('div');
+        left.className = 'tx-name';
+        left.textContent = meta.name;
+
+        const right = document.createElement('div');
+        right.className = 'tx-actions';
+        txTagsForCause(key).forEach(t => {
+          const tag = document.createElement('span');
+          tag.className = 'tx-tag';
+          tag.textContent = t;
+          right.appendChild(tag);
+        });
+
+        row.appendChild(left);
+        row.appendChild(right);
+        txAnt.appendChild(row);
+      });
+    }
+
+    // Disposition
+    const dispRows = dispositionRows(s);
+    dispRows.forEach(r => {
+      const row = document.createElement('div');
+      row.className = 'treatment-row';
+      const span = document.createElement('span');
+      span.textContent = r.text;
+      const badge = document.createElement('span');
+      badge.className = r.type === 'icu' ? 'badge-red' : r.type === 'obs' ? 'badge-yellow' : 'badge-green';
+      badge.textContent = r.label;
+      row.appendChild(span);
+      row.appendChild(badge);
+      txDisp.appendChild(row);
+    });
+  }
+
+  function txTagsForCause(key) {
+    switch (key) {
+      case 'opioid':
+        return ['Naloxone titrate', 'Theo dõi hô hấp ≥ 2 giờ', 'Chuẩn bị NKQ nếu đáp ứng kém'];
+      case 'sedative':
+        return ['Bảo vệ đường thở', 'BZD hỗ trợ nếu cai', 'Tránh flumazenil trừ chỉ định rõ'];
+      case 'cholinergic':
+        return ['Atropine liều tăng dần', 'Pralidoxime nếu có', 'Hút đàm, hỗ trợ thở'];
+      case 'anticholinergic':
+        return ['BZD an thần', 'Hạ nhiệt chủ động', 'Theo dõi bí tiểu / loạn nhịp'];
+      case 'sympathomimetic':
+        return ['BZD liều đủ', 'Kiểm soát HA (GTN, phentolamine)', 'Tránh chẹn beta đơn thuần'];
+      case 'tca':
+        return ['NaHCO3 bolus & truyền', 'Theo dõi QRS, QTc', 'ICU, chuẩn bị sốc điện nếu loạn nhịp'];
+      case 'ccb':
+        return ['Calci TM', 'Insulin liều cao', 'Glucagon nếu có', 'Theo dõi đường, kali'];
+      case 'paracetamol':
+        return ['NAC sớm & đủ', 'Theo dõi men gan, INR', 'Tham khảo độc chất học nếu muộn'];
+      case 'salicylate':
+        return ['Kiềm hóa nước tiểu', 'Tránh giảm thông khí', 'Cân nhắc lọc máu khi nặng'];
+      case 'caustic':
+        return ['Không gây nôn / rửa dạ dày', 'Bảo vệ đường thở', 'Nội soi sớm, ngoại khoa nếu thủng'];
+      default:
+        return ['Chăm sóc hỗ trợ tối ưu', 'Tham vấn chống độc nếu cần'];
+    }
+  }
+
+  function dispositionRows(s) {
+    const rows = [];
+    const levelHigh = document.getElementById('risk-pill').classList.contains('risk-high');
+    const levelMed = document.getElementById('risk-pill').classList.contains('risk-med');
+
+    const needICU =
+      levelHigh ||
+      s.airway === 'mất' ||
+      s.breathSupport === 'thở máy' ||
+      s.shock === 'có' ||
+      s.dysrhythmia === 'có' ||
+      (s.qrs !== null && s.qrs >= 120) ||
+      (s.acidosis === 'có');
+
+    if (needICU) {
+      rows.push({
+        type: 'icu',
+        label: 'ICU',
+        text: 'Ưu tiên ICU: cần kiểm soát đường thở / thở máy, vận mạch, theo dõi loạn nhịp hoặc toan chuyển hóa nặng.'
+      });
+    } else if (levelMed) {
+      rows.push({
+        type: 'obs',
+        label: 'Theo dõi sát',
+        text: 'Theo dõi tại đơn vị có monitor liên tục ≥ 12–24 giờ, lặp lại sinh hiệu, ECG, xét nghiệm khi cần.'
+      });
+    } else {
+      rows.push({
+        type: 'obs',
+        label: 'Theo dõi ngắn',
+        text: 'Có thể theo dõi ngắn hạn tại cấp cứu, nếu sau thời gian nguy cơ vẫn ổn định có thể cân nhắc xuất viện kèm tư vấn.'
+      });
+    }
+
+    rows.push({
+      type: 'safe',
+      label: 'Nguyên tắc',
+      text: 'Không xuất viện khi chưa rõ độc chất / liều, chưa qua giai đoạn nguy cơ cao, hoặc chưa tư vấn đầy đủ.'
+    });
+
+    return rows;
+  }
+
+  // --- CLEAR / RESET ---
+  document.getElementById('btn-clear').addEventListener('click', () => {
+    Object.keys(caseState).forEach(k => caseState[k] = null);
+    [ageInput, timeInput, sbpInput, hrInput, tempInput, qrsInput, qtcInput].forEach(el => { if (el) el.value = ''; });
+    agentInput.value = '';
+    document.querySelectorAll('.choice-pill').forEach(p => p.classList.remove('selected'));
+    updateAll();
+  });
+
+  // --- INITIAL ---
+  updateAll();
+</script>
+</body>
+</html>

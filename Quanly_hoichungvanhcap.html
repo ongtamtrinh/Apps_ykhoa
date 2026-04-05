@@ -138,7 +138,32 @@
           </div>
         </div>
       </div>
-
+      <div id="stemiLocalization" class="mt-3 p-3 bg-slate-950/50 border border-red-900/30 rounded-lg hidden">
+        <div class="text-[10px] font-bold text-red-400 uppercase mb-2">Định vị vùng STEMI (chọn các lead chênh):</div>
+        <div class="grid grid-cols-3 gap-1.5">
+          <label class="flex items-center gap-1.5 bg-slate-800 p-1.5 rounded cursor-pointer hover:bg-slate-700">
+            <input type="checkbox" class="lead-check" value="V12" onchange="runLocalization()"> <span class="text-[11px]">V1-V2</span>
+          </label>
+          <label class="flex items-center gap-1.5 bg-slate-800 p-1.5 rounded cursor-pointer hover:bg-slate-700">
+            <input type="checkbox" class="lead-check" value="V34" onchange="runLocalization()"> <span class="text-[11px]">V3-V4</span>
+          </label>
+          <label class="flex items-center gap-1.5 bg-slate-800 p-1.5 rounded cursor-pointer hover:bg-slate-700">
+            <input type="checkbox" class="lead-check" value="Lateral" onchange="runLocalization()"> <span class="text-[11px]">V5-6,I,aVL</span>
+          </label>
+          <label class="flex items-center gap-1.5 bg-slate-800 p-1.5 rounded cursor-pointer hover:bg-slate-700">
+            <input type="checkbox" class="lead-check" value="Inferior" onchange="runLocalization()"> <span class="text-[11px]">II,III,aVF</span>
+          </label>
+          <label class="flex items-center gap-1.5 bg-slate-800 p-1.5 rounded cursor-pointer hover:bg-slate-700">
+            <input type="checkbox" class="lead-check" value="RV" onchange="runLocalization()"> <span class="text-[11px]">V3R-V4R</span>
+          </label>
+          <label class="flex items-center gap-1.5 bg-slate-800 p-1.5 rounded cursor-pointer hover:bg-slate-700">
+            <input type="checkbox" class="lead-check" value="Posterior" onchange="runLocalization()"> <span class="text-[11px]">V7-V9</span>
+          </label>
+        </div>
+        
+        <div id="miLocationDetail" class="mt-2 text-[11px] text-blue-300 font-medium"></div>
+        <div id="miWarning" class="mt-1 text-[10px] text-red-400 font-bold italic animate-pulse"></div>
+      </div>
       <!-- B. Nguy cơ & chiến lược NSTE-ACS -->
       <div class="bg-slate-900/80 border border-slate-700 rounded-xl">
         <button type="button"
@@ -351,19 +376,18 @@ Nhập LVEF, ĐTĐ, HBR, OAC để sinh đơn ra viện...</pre>
     }
 
     function setECG(type) {
-      acsState.presentation.ecgType = type;
-      document.getElementById('btnECG_STEMI').classList.toggle(
-        'ring-2', type === 'STEMI'
-      );
-      document.getElementById('btnECG_STEMI').classList.toggle(
-        'ring-red-500', type === 'STEMI'
-      );
-      document.getElementById('btnECG_NSTE').classList.toggle(
-        'ring-2', type === 'NSTE'
-      );
-      document.getElementById('btnECG_NSTE').classList.toggle(
-        'ring-amber-400', type === 'NSTE'
-      );
+      acsState.presentation.ecgType = type; // Sửa từ state.ecg thành acsState...
+      
+      // Update UI Buttons
+      document.getElementById('btnECG_STEMI').classList.toggle('ring-2', type === 'STEMI');
+      document.getElementById('btnECG_STEMI').classList.toggle('ring-red-500', type === 'STEMI');
+      document.getElementById('btnECG_NSTE').classList.toggle('ring-2', type === 'NSTE');
+      document.getElementById('btnECG_NSTE').classList.toggle('ring-amber-400', type === 'NSTE');
+
+      // Hiện block định vị nếu là STEMI
+      const locBlock = document.getElementById('stemiLocalization');
+      if (locBlock) locBlock.classList.toggle('hidden', type !== 'STEMI');
+      
       updateStateFromForm();
     }
 
@@ -714,6 +738,70 @@ function renderOrders() {
 
     function scrollToTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function runLocalization() {
+      const checked = Array.from(document.querySelectorAll('.lead-check:checked')).map(el => el.value);
+      let regions = [];
+      let arteries = [];
+      let warning = "";
+
+      // Logic nhận diện vùng đặc biệt (Gộp)
+      const hasV14 = checked.includes('V12') && checked.includes('V34');
+      const hasLat = checked.includes('Lateral');
+      const hasInf = checked.includes('Inferior');
+
+      if (hasV14 && hasLat) {
+        regions.push("TRƯỚC RỘNG");
+        arteries.push("LAD đoạn gần");
+      } else if (hasV14) {
+        regions.push("Trước vách");
+        arteries.push("LAD");
+      } else {
+        if (checked.includes('V12')) { regions.push("Vách"); arteries.push("LAD"); }
+        if (checked.includes('V34')) { regions.push("Thành trước"); arteries.push("LAD"); }
+      }
+
+      if (hasInf) {
+        let infType = "Thành dưới";
+        let art = "RCA";
+        if (checked.includes('RV')) {
+          infType += " + Thất phải";
+          art = "RCA đoạn gần";
+          warning = "⚠️ CẢNH BÁO: NMCT THẤT PHẢI. Tuyệt đối tránh Nitrat, Morphine, Lợi tiểu. Ưu tiên truyền dịch nếu HA thấp.";
+        }
+        if (checked.includes('Posterior')) {
+          infType += " + Thành sau";
+          art += "/LCx";
+        }
+        regions.push(infType);
+        arteries.push(art);
+      }
+
+      if (hasLat && !regions.includes("TRƯỚC RỘNG")) {
+        regions.push("Thành bên");
+        arteries.push("LCx/LAD chéo");
+      }
+
+      // Cập nhật giao diện
+      const resultText = regions.length > 0 ? regions.join(" - ") : "";
+      const artText = [...new Set(arteries)].join(" | ");
+      
+      document.getElementById('miLocationDetail').innerHTML = resultText 
+        ? `📍 Vùng: <span class="text-white">${resultText}</span><br>🧬 Thủ phạm: <span class="text-white">${artText}</span>` 
+        : "";
+      document.getElementById('miWarning').textContent = warning;
+
+      // Lưu vào state để hiển thị ở Board và Y lệnh
+      acsState.presentation.miLocation = resultText;
+      acsState.presentation.miWarning = warning;
+      
+      updateStateFromForm(); 
+    }
+    // Chỉnh sửa hàm setECG hiện tại để ẩn/hiện block định vị
+    function setECG(type) {
+      state.ecg = type; 
+      document.getElementById('stemiLocalization').classList.toggle('hidden', type !== 'STEMI');
+      updateStateFromForm();
     }
   </script>
 </body>

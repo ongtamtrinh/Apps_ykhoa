@@ -48,13 +48,37 @@
                 <h2 class="text-sm font-bold text-indigo-700 dark:text-indigo-400 mb-2 uppercase tracking-wide">Tìm Nhanh Phác Đồ Theo Chất Độc</h2>
                 <div class="flex flex-col sm:flex-row gap-2">
                     <select id="quick-poison-select" class="flex-1 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-3 text-slate-900 dark:text-white font-medium">
-                        <option value="">-- Chọn chất ngộ độc (Nếu đã biết) --</option>
-                        <option value="Paracetamol">Paracetamol (Acetaminophen)</option>
-                        <option value="PhosphoHuuCo">Thuốc trừ sâu Phospho hữu cơ / Carbamate</option>
-                        <option value="TCA">Thuốc chống trầm cảm 3 vòng (TCA)</option>
-                        <option value="Opioid">Heroin / Morphine / Fentanyl (Opioid)</option>
-                        <option value="Methanol">Cồn công nghiệp (Methanol)</option>
-                        <option value="Amphetamine">Ma túy đá (Meth) / Cocaine</option>
+                        <option value="">-- Chọn chất ngộ độc --</option>
+                        <optgroup label="Thuốc Điều Trị">
+                            <option value="Paracetamol">Paracetamol (Acetaminophen)</option>
+                            <option value="Benzodiazepine">Thuốc an thần (Benzodiazepine)</option>
+                            <option value="TCA">Thuốc chống trầm cảm 3 vòng (TCA)</option>
+                            <option value="CCB_Beta">Thuốc chẹn Canxi / Chẹn Beta</option>
+                            <option value="Digoxin">Digoxin (Trợ tim)</option>
+                            <option value="VitaminK_Overdose">Quá liều Vitamin K (Kháng thuốc chống đông)</option>
+                            <option value="Warfarin">Thuốc diệt chuột nhóm chống đông (Warfarin, Diphacinone)</option>
+                            <option value="Isoniazid">Thuốc lao Isoniazid (INH)</option>
+                            <option value="Aspirin">Thuốc giảm đau Aspirin (Salicylate)</option>
+                        </optgroup>
+                        <optgroup label="Hóa Chất Bảo Vệ Thực Vật">
+                            <option value="PhosphoHuuCo">Phospho hữu cơ / Carbamate</option>
+                            <option value="Paraquat">Diệt cỏ Paraquat</option>
+                            <option value="Rodenticide">Thuốc diệt chuột (Warfarin/Diphacinone)</option>
+                            <option value="Glyphosate">Thuốc diệt cỏ Glyphosate</option>
+                            <option value="FoodPoisoning">Ngộ độc thực phẩm (Nhiễm trùng/độc tố)</option>
+                        </optgroup>
+                        <optgroup label="Độc Chất Tự Nhiên & Thực Phẩm">
+                            <option value="Snakebite">Rắn độc cắn</option>
+                            <option value="NamDoc">Nấm độc (Amanita, Muscarine...)</option>
+                            <option value="Botulinum">Botulinum (Ngộ độc thực phẩm kín)</option>
+                            <option value="Methanol">Cồn công nghiệp (Methanol)</option>
+                            <option value="Alcohol">Rượu Ethanol (Ngộ độc rượu thông thường)</option>
+                            <option value="Cyanide">Cyanide (Xyanua)</option>
+                        </optgroup>
+                        <optgroup label="Khí Độc & Chất Ăn Mòn">
+                            <option value="CO">Khí CO (Carbon Monoxide)</option>
+                            <option value="Corrosive">Chất ăn mòn (Acid / Kiềm mạnh)</option>
+                        </optgroup>
                     </select>
                     <button onclick="quickSearchPoison()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow transition whitespace-nowrap">Xem Ngay</button>
                 </div>
@@ -103,6 +127,13 @@
                                 <td class="p-1 sm:p-2 text-center">Chậm ↓</td>
                                 <td class="p-1 sm:p-2">Lạnh, Tím</td>
                                 <td class="p-1 sm:p-2 text-red-500 font-bold">Suy hô hấp (Nhịp thở ↓↓), Hôn mê</td>
+                            </tr>
+                            <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                                <td class="p-1 sm:p-2 font-bold text-slate-500 dark:text-slate-300">An thần</td>
+                                <td class="p-1 sm:p-2 text-center">Bình thường</td>
+                                <td class="p-1 sm:p-2 text-center">↓ / N</td>
+                                <td class="p-1 sm:p-2">Bình thường</td>
+                                <td class="p-1 sm:p-2">Lơ mơ, Hôn mê êm dịu, HA giảm</td>
                             </tr>
                         </tbody>
                     </table>
@@ -187,7 +218,8 @@
 
         <div id="tab-checklist" class="tab-content">
             <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                <h2 class="text-xl font-bold text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-600 pb-2 mb-4">Bảng Kiểm Theo Dõi</h2>
+                <h2 class="text-xl font-bold text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-600 pb-2 mb-4">Bảng Kiểm Kiểm Soát Mốc Thời Gian</h2>
+                
                 <details class="group mb-4" open>
                     <summary class="flex justify-between items-center font-medium cursor-pointer list-none bg-red-100 dark:bg-red-900/40 border border-red-300 dark:border-red-700 p-3 rounded-lg text-red-800 dark:text-red-200">
                         <span class="font-bold">Giai đoạn 0 - 60 Phút (Tối Khẩn)</span>
@@ -195,17 +227,45 @@
                     </summary>
                     <div class="p-4 bg-slate-50 dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-700 rounded-b-lg -mt-2 pt-4">
                         <ul class="space-y-3 text-sm">
-                            <li class="flex items-start"><input type="checkbox" class="mt-1 mr-3 w-4 h-4 accent-red-600"> <span><b>A-B-C-D-E:</b> NKQ nếu GCS < 8. Lập 2 đường truyền lớn.</span></li>
-                            <li class="flex items-start"><input type="checkbox" class="mt-1 mr-3 w-4 h-4 accent-red-600"> <span><b>Monitor:</b> ECG, SpO2, Huyết áp liên tục.</span></li>
-                            <li class="flex items-start"><input type="checkbox" class="mt-1 mr-3 w-4 h-4 accent-red-600"> <span><b>Đường huyết mao mạch:</b> Test ngay lập tức.</span></li>
-                            <li class="flex items-start"><input type="checkbox" class="mt-1 mr-3 w-4 h-4 accent-red-600"> <span><b>Lấy mẫu:</b> Máu, nước tiểu, dịch dạ dày. Khí máu ĐM.</span></li>
-                            <li class="flex items-start"><input type="checkbox" class="mt-1 mr-3 w-4 h-4 accent-red-600"> <span><b>Tẩy độc:</b> Rửa dạ dày (<1h) và Than hoạt đơn liều 1g/kg.</span></li>
+                            <li class="flex items-start"><input type="checkbox" class="mt-1 mr-3 w-4 h-4 accent-red-600 dark:accent-red-500"> <span><b>Đánh giá A-B-C-D-E:</b> Đặt NKQ nếu GCS < 8 hoặc suy hô hấp. Lập 2 đường truyền TM lớn.</span></li>
+                            <li class="flex items-start"><input type="checkbox" class="mt-1 mr-3 w-4 h-4 accent-red-600 dark:accent-red-500"> <span><b>Mắc Monitor:</b> Theo dõi ECG, SpO2, Huyết áp liên tục.</span></li>
+                            <li class="flex items-start"><input type="checkbox" class="mt-1 mr-3 w-4 h-4 accent-red-600 dark:accent-red-500"> <span><b>Test đường huyết mao mạch:</b> Cực kỳ quan trọng để loại trừ hạ đường huyết.</span></li>
+                            <li class="flex items-start"><input type="checkbox" class="mt-1 mr-3 w-4 h-4 accent-red-600 dark:accent-red-500"> <span><b>Lấy mẫu:</b> Máu tĩnh mạch, nước tiểu, dịch dạ dày lưu lại tìm độc chất. Làm Khí máu ĐM.</span></li>
+                            <li class="flex items-start"><input type="checkbox" class="mt-1 mr-3 w-4 h-4 accent-red-600 dark:accent-red-500"> <span><b>Tẩy độc TH:</b> Cân nhắc Rửa dạ dày (nếu đến sớm < 1h) và cho Than hoạt đơn liều 1g/kg.</span></li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details class="group mb-4">
+                    <summary class="flex justify-between items-center font-medium cursor-pointer list-none bg-amber-100 dark:bg-amber-900/40 border border-amber-300 dark:border-amber-700 p-3 rounded-lg text-amber-800 dark:text-amber-200">
+                        <span class="font-bold">Giai đoạn 1h - 6h (Giải Độc & Chẩn Đoán)</span>
+                        <span class="transition group-open:rotate-180">▼</span>
+                    </summary>
+                    <div class="p-4 bg-slate-50 dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-700 rounded-b-lg -mt-2 pt-4">
+                        <ul class="space-y-3 text-sm">
+                            <li class="flex items-start"><input type="checkbox" class="mt-1 mr-3 w-4 h-4 accent-amber-600 dark:accent-amber-500"> <span><b>Tính Gaps:</b> Nhập điện giải đồ tính Khoảng trống Anion (AG), Khoảng trống ALTT (OG).</span></li>
+                            <li class="flex items-start"><input type="checkbox" class="mt-1 mr-3 w-4 h-4 accent-amber-600 dark:accent-amber-500"> <span><b>Antidote:</b> Quyết định chỉ định và truyền thuốc giải độc đặc hiệu.</span></li>
+                            <li class="flex items-start"><input type="checkbox" class="mt-1 mr-3 w-4 h-4 accent-amber-600 dark:accent-amber-500"> <span><b>Đo lại ECG:</b> Đánh giá QT, QRS giãn rộng.</span></li>
+                            <li class="flex items-start"><input type="checkbox" class="mt-1 mr-3 w-4 h-4 accent-amber-600 dark:accent-amber-500"> <span><b>Hội chẩn RRT:</b> Đánh giá chỉ định Lọc máu.</span></li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details class="group">
+                    <summary class="flex justify-between items-center font-medium cursor-pointer list-none bg-blue-100 dark:bg-blue-900/40 border border-blue-300 dark:border-blue-700 p-3 rounded-lg text-blue-800 dark:text-blue-200">
+                        <span class="font-bold">Giai đoạn > 6h (Duy Trì & Biến Chứng)</span>
+                        <span class="transition group-open:rotate-180">▼</span>
+                    </summary>
+                    <div class="p-4 bg-slate-50 dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-700 rounded-b-lg -mt-2 pt-4">
+                        <ul class="space-y-3 text-sm">
+                            <li class="flex items-start"><input type="checkbox" class="mt-1 mr-3 w-4 h-4 accent-blue-600 dark:accent-blue-500"> <span><b>Xét nghiệm lại:</b> Chức năng gan (AST/ALT), Thận (Cre), Khí máu sau mỗi 4-6h.</span></li>
+                            <li class="flex items-start"><input type="checkbox" class="mt-1 mr-3 w-4 h-4 accent-blue-600 dark:accent-blue-500"> <span><b>Đánh giá Tâm thần:</b> Hội chẩn bác sĩ tâm thần nếu nguyên nhân là tự tử.</span></li>
+                            <li class="flex items-start"><input type="checkbox" class="mt-1 mr-3 w-4 h-4 accent-blue-600 dark:accent-blue-500"> <span><b>Phòng loét & Dinh dưỡng:</b> Xoay trở, ống thông dạ dày.</span></li>
                         </ul>
                     </div>
                 </details>
             </div>
         </div>
-
         <div id="tab-tools" class="tab-content">
             <div class="bg-white dark:bg-slate-800 p-5 rounded-xl border border-slate-200 dark:border-slate-700 mb-4 shadow-sm">
                 <h2 class="text-xl font-bold text-teal-600 dark:text-teal-400 border-b border-slate-200 dark:border-slate-600 pb-2 mb-4">Máy Tính Liều Lượng Antidote</h2>
@@ -224,11 +284,10 @@
                         </select>
                     </div>
                 </div>
-                
                 <button onclick="calculateDose()" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-lg shadow-md transition text-lg">Tính Liều Chính Xác</button>
                 
                 <div id="dose-result" class="hidden mt-5">
-                    </div>
+                </div>
             </div>
         </div>
 
@@ -262,65 +321,148 @@
         }
         initTheme();
 
-        // --- CƠ SỞ DỮ LIỆU PHÁC ĐỒ (Thêm Paracetamol) ---
+        // --- CƠ SỞ DỮ LIỆU PHÁC ĐỒ (Đã bổ sung 5 loại ngộ độc mới) ---
         const protocolsDB = {
             'Paracetamol': {
-                name: 'Ngộ độc Paracetamol (Acetaminophen)',
-                antidote: `
-                    <p><b>N-Acetylcysteine (NAC) tĩnh mạch - Phác đồ 21 giờ:</b></p>
-                    <ul class="list-disc ml-5 mt-1">
-                        <li><b>Liều 1 (Tải):</b> 150 mg/kg truyền tĩnh mạch trong 15 - 60 phút.</li>
-                        <li><b>Liều 2:</b> 50 mg/kg truyền tĩnh mạch trong 4 giờ tiếp theo.</li>
-                        <li><b>Liều 3:</b> 100 mg/kg truyền tĩnh mạch trong 16 giờ tiếp theo.</li>
-                    </ul>
-                    <p class="mt-2 italic text-sm text-blue-500">→ Chuyển sang Tab "Tính Liều" để máy tự tính số mg và cách pha dịch theo cân nặng thực tế.</p>
-                `,
-                procedures: 'Rửa dạ dày, Than hoạt đơn liều (nếu đến sớm < 2h). Lấy máu xét nghiệm nồng độ Paracetamol, AST, ALT, PT/INR.',
-                warning: 'Xác định chỉ định dùng NAC dựa trên toán đồ Rumack-Matthew (nếu biết rõ giờ uống).'
+                name: 'Ngộ độc Paracetamol',
+                antidote: 'N-Acetylcysteine (NAC). Phác đồ tĩnh mạch 21 giờ: 150mg/kg (1h) → 50mg/kg (4h) → 100mg/kg (16h).',
+                procedures: 'Rửa dạ dày, Than hoạt đơn liều (nếu < 2h). Định lượng nồng độ thuốc máu sau 4h.',
+                warning: 'Cảnh báo suy gan cấp sau 24-48h.'
             },
             'PhosphoHuuCo': {
-                name: 'Thuốc trừ sâu Phospho hữu cơ / Carbamate',
-                antidote: `
-                    <p><b>1. Atropin:</b> Liều thử 2mg (TM). Gấp đôi mỗi 5-15p đến khi ngấm Atropin (Hết ran phổi, mạch >80 l/p, đồng tử giãn). Duy trì bằng Bơm tiêm điện.</p>
-                    <p class="mt-2"><b>2. Pralidoxime (PAM):</b> Chỉ dùng cho Phospho hữu cơ. Liều tải: 30mg/kg. Duy trì: 8mg/kg/giờ.</p>
-                `,
-                procedures: 'Rửa dạ dày, Than hoạt đa liều. Tắm rửa sạch xà phòng nếu nhiễm qua da.',
-                warning: 'CẢNH BÁO: Đeo găng cao su y tế dày (không dùng găng nilon mỏng) khi tiếp xúc chất tiết.'
+                name: 'Phospho hữu cơ / Carbamate',
+                antidote: 'Atropin (duy trì thấm) + Pralidoxime (PAM) 30mg/kg tải, sau đó duy trì 8mg/kg/h.',
+                procedures: 'Rửa dạ dày, Than hoạt đa liều. Tắm rửa sạch nếu nhiễm qua da.',
+                warning: 'Nguy cơ hội chứng trung gian (yếu cơ hô hấp) sau 24-96h.'
             },
-            'TCA': {
-                name: 'Thuốc chống trầm cảm 3 vòng (TCA)',
-                antidote: `
-                    <p><b>Sodium Bicarbonate (NaHCO3 8.4%):</b> <br>Chỉ định: QRS > 100ms hoặc loạn nhịp thất.<br>Liều: 1-2 mEq/kg (TM chậm), nhắc lại nếu cần. Mục tiêu pH 7.45 - 7.55.</p>
-                    <p class="mt-2"><b>Kiểm soát co giật:</b> Benzodiazepine (Seduxen).</p>
-                `,
-                procedures: 'Than hoạt đơn liều. KHÔNG dùng Flumazenil.',
-                warning: 'Nguy cơ loạn nhịp thất tử vong (Torsades de pointes). Sẵn sàng máy sốc điện.'
+            'Benzodiazepine': {
+                name: 'Thuốc an thần (Benzodiazepine)',
+                antidote: 'Flumazenil 0.2mg TM (tối đa 3mg). Không dùng nếu có tiền sử động kinh hoặc ngộ độc kèm TCA.',
+                procedures: 'Hỗ trợ hô hấp là chính. Than hoạt nếu đến sớm.',
+                warning: 'Nguy cơ co giật nếu dùng Flumazenil cho người nghiện thuốc mạn tính.'
             },
-            'Opioid': {
-                name: 'Heroin / Morphine / Fentanyl',
-                antidote: `
-                    <p><b>Naloxone:</b> Liều 0.04 - 0.4 mg (TM/TB). Nghi ngờ Fentanyl/suy hô hấp nặng: dùng 2mg. Lặp lại mỗi 2-3 phút.</p>
-                `,
-                procedures: 'Bóp bóng / Đặt NKQ là ưu tiên số 1, trước khi tiêm Naloxone.',
-                warning: 'Thời gian tác dụng Naloxone ngắn (30-60p), theo dõi sát nguy cơ tái ngưng thở.'
+            'Rodenticide': {
+                name: 'Thuốc diệt chuột (Warfarin/Diphacinone)',
+                antidote: 'Vitamin K1 (10-20mg tiêm TM chậm hoặc uống). Huyết tương tươi đông lạnh nếu có chảy máu nặng.',
+                procedures: 'Theo dõi PT/INR hàng ngày. Than hoạt nếu mới uống.',
+                warning: 'Thời gian bán thải rất dài, có thể cần dùng Vitamin K1 kéo dài hàng tháng.'
+            },
+            'NamDoc': {
+                name: 'Ngộ độc Nấm',
+                antidote: 'Penicillin G liều cao hoặc Silibinin (nếu có) cho nhóm Amanita. Atropin cho nhóm Muscarine (gây chảy nước mắt, nước dãi).',
+                procedures: 'Rửa dạ dày tích cực. Than hoạt đa liều. Bù dịch và điện giải.',
+                warning: 'Nhóm Amanita gây suy gan cực nặng sau giai đoạn "nghỉ" 6-24h.'
+            },
+            'Botulinum': {
+                name: 'Ngộ độc Botulinum (Thực phẩm kín)',
+                antidote: 'Huyết thanh kháng độc tố Botulinum (BAT). Càng sớm càng tốt.',
+                procedures: 'Đặt nội khí quản thở máy sớm nếu có dấu hiệu yếu cơ hô hấp. Rửa dạ dày.',
+                warning: 'Triệu chứng đặc trưng: Liệt tứ chi kiểu ngoại vi đối xứng, sụp mi, liệt vận nhãn nhưng tỉnh táo.'
+            },
+            'Cyanide': {
+                name: 'Ngộ độc Xyanua',
+                antidote: 'Hydroxycobalamin (Vitamin B12a) 5g TM. Hoặc bộ kit Nitrite + Sodium Thiosulfate.',
+                procedures: 'Oxy 100%. Bù kiềm nếu toan lactic nặng.',
+                warning: 'Diễn tiến cực nhanh, tử vong trong vài phút nếu không xử trí kịp.'
+            },
+            'Corrosive': {
+                name: 'Chất ăn mòn (Acid / Kiềm)',
+                antidote: 'Không có thuốc giải. KHÔNG trung hòa (gây phản ứng nhiệt làm bỏng thêm).',
+                procedures: 'KHÔNG rửa dạ dày, KHÔNG gây nôn, KHÔNG dùng than hoạt. Soi thực quản dạ dày trong 24h đầu.',
+                warning: 'Nguy cơ thủng tạng rỗng kịch phát.'
+            },
+            'CCB_Beta': {
+                name: 'Chẹn Canxi / Chẹn Beta',
+                antidote: 'Calcium 10% + Glucagon (3-10mg TM) + Insulin liều cao (HIET) kèm Glucose duy trì.',
+                procedures: 'Vận mạch (Norepinephrine) sớm. Rửa dạ dày nếu thuốc giải phóng chậm.',
+                warning: 'Tụt huyết áp và nhịp chậm kháng trị.'
+            },
+            'Snakebite': {
+                name: 'Rắn độc cắn',
+                antidote: 'Huyết thanh kháng nọc rắn đặc hiệu (Rắn lục, Hổ mang, Cạp nong/nia).',
+                procedures: 'Băng ép bất động chi (với rắn hổ). KHÔNG garô chặt, KHÔNG rạch hút.',
+                warning: 'Sẵn sàng cấp cứu sốc phản vệ khi truyền huyết thanh.'
             },
             'Methanol': {
-                name: 'Cồn công nghiệp (Methanol)',
-                antidote: `
-                    <p><b>1. Fomepizole:</b> 15 mg/kg (TM). Duy trì 10 mg/kg mỗi 12h.</p>
-                    <p class="mt-2"><b>2. Ethanol:</b> Truyền tĩnh mạch hoặc uống qua sonde. Mục tiêu nồng độ cồn máu 100-150 mg/dL.</p>
-                `,
-                procedures: '<b>Lọc máu (HD):</b> Chỉ định khi: Rối loạn thị giác, pH < 7.25, Methanol > 50 mg/dL.',
-                warning: 'Gợi ý mạnh khi Toan chuyển hóa tăng khoảng trống Anion và ALTT.'
+                name: 'Ngộ độc Methanol',
+                antidote: 'Ethanol (uống/TM) hoặc Fomepizole. Acid Folic 50mg mỗi 4h.',
+                procedures: 'Lọc máu ngắt quãng (HD) là biện pháp thải độc hiệu quả nhất.',
+                warning: 'Nguy cơ mù vĩnh viễn và toan máu nặng.'
             },
-            'Amphetamine': {
-                name: 'Ma túy đá (Meth) / Cocaine',
-                antidote: `<p>Không có thuốc giải đặc hiệu.<br><b>Kích động/Co giật/Tăng HA:</b> Dùng Diazepam liều cao (TM).</p>`,
-                procedures: 'Hạ nhiệt độ cơ thể tích cực, bù dịch.',
-                warning: 'CHỐNG CHỈ ĐỊNH chẹn Beta (Propranolol) đơn thuần trong ngộ độc Cocaine.'
+            'CO': {
+                name: 'Ngộ độc khí CO',
+                antidote: 'Oxy nồng độ cao (100%) qua mask dự trữ hoặc Oxy cao áp (HBO).',
+                procedures: 'Đưa khỏi hiện trường. Theo dõi nồng độ HbCO máu.',
+                warning: 'SpO2 thường báo ảo (vẫn cao dù bệnh nhân thiếu oxy mô).'
+            },
+            'VitaminK_Overdose': {
+                name: 'Quá liều Vitamin K (Gây kháng thuốc chống đông)',
+                antidote: `
+                    <p><b>1. Ngưng Vitamin K:</b> Dừng ngay lập tức các dạng thuốc uống hoặc tiêm.</p>
+                    <p class="mt-2"><b>2. Tái lập tác dụng chống đông:</b> Nếu bệnh nhân có nguy cơ tắc mạch cao (van tim cơ học, AF), cần chuyển sang dùng <b>Heparin không phân đoạn</b> hoặc <b>Heparin trọng lượng phân tử thấp (Lovenox)</b> đường tiêm cho đến khi tác dụng của Vitamin K hết hoàn toàn.</p>
+                `,
+                procedures: 'Theo dõi chỉ số <b>PT/INR</b> hàng ngày. Đánh giá các dấu hiệu thuyên tắc mạch (đau chân, khó thở, liệt nửa người).',
+                warning: 'Quá liều Vitamin K không gây độc cấp tính nhưng làm mất tác dụng của thuốc chống đông kháng Vitamin K trong 1-2 tuần, đặt bệnh nhân vào nguy cơ đột quỵ do huyết khối.'
+            },
+            'Warfarin': {
+                name: 'Ngộ độc Warfarin / Thuốc diệt chuột kháng Vitamin K',
+                antidote: `
+                    <p><b>1. Vitamin K1 (Phytomenadione):</b> Thuốc giải đặc hiệu.</p>
+                    <ul class="list-disc ml-5 mt-1">
+                        <li><b>Chảy máu nặng:</b> 10 - 20 mg tiêm tĩnh mạch chậm (trong 30 phút). Lặp lại mỗi 6-12h nếu cần.</li>
+                        <li><b>Không chảy máu (INR > 10):</b> 2.5 - 5 mg uống hoặc tiêm dưới da.</li>
+                    </ul>
+                    <p class="mt-2"><b>2. Cầm máu tức thời:</b></p>
+                    <ul class="list-disc ml-5 mt-1">
+                        <li>Huyết tương tươi đông lạnh (FFP): 15 ml/kg.</li>
+                        <li>Phức hợp Prothrombin tập trung (PCC): Nếu có điều kiện, hiệu quả nhanh hơn FFP.</li>
+                    </ul>
+                `,
+                procedures: 'Rửa dạ dày, Than hoạt đơn liều (nếu mới uống < 2h). Xét nghiệm PT/INR ngay lúc nhập viện và theo dõi mỗi 12-24h.',
+                warning: 'CẢNH BÁO: Các loại thuốc diệt chuột thế hệ mới (Superwarfarin) có thời gian bán thải rất dài. Bệnh nhân có thể cần điều trị Vitamin K1 kéo dài từ vài tuần đến hàng tháng.'
+            },
+            'Isoniazid': {
+                name: 'Ngộ độc thuốc lao Isoniazid (INH)',
+                antidote: `
+                    <p><b>Vitamin B6 (Pyridoxine):</b> Thuốc giải đặc hiệu.</p>
+                    <ul class="list-disc ml-5 mt-1">
+                        <li><b>Liều:</b> 1 gram Vitamin B6 cho mỗi 1 gram INH đã uống (nếu biết liều).</li>
+                        <li><b>Nếu không biết liều:</b> Tiêm tĩnh mạch 5g Vitamin B6 trong 5-10 phút. Lặp lại nếu còn co giật.</li>
+                    </ul>
+                `,
+                procedures: 'Kiểm soát co giật bằng Benzodiazepine (Diazepam). Rửa dạ dày nếu đến sớm.',
+                warning: 'Triệu chứng điển hình: Co giật kháng trị, Toan chuyển hóa nặng và Hôn mê.'
+            },
+            'Aspirin': {
+                name: 'Ngộ độc Aspirin (Salicylate)',
+                antidote: `
+                    <p><b>Kiềm hóa nước tiểu (Sodium Bicarbonate 8.4%):</b></p>
+                    <p class="text-sm">Mục tiêu pH nước tiểu 7.5 - 8.5 để tăng thải trừ Salicylate qua thận.</p>
+                `,
+                procedures: 'Than hoạt đa liều (rất hiệu quả). Lọc máu ngắt quãng (HD) nếu nồng độ Aspirin máu > 100 mg/dL hoặc có suy thận, phù phổi.',
+                warning: 'Dấu hiệu sớm: Ú tai, thở nhanh (kiềm hô hấp), sau đó là toan chuyển hóa nặng.'
+            },
+            'Alcohol': {
+                name: 'Ngộ độc Rượu cấp (Ethanol)',
+                antidote: `
+                    <p>Không có thuốc giải đặc hiệu. Điều trị hỗ trợ là chính.</p>
+                    <ul class="list-disc ml-5 mt-1">
+                        <li>Bù dịch tinh thể.</li>
+                        <li>Vitamin B1 (Thiamine) 100-300mg tiêm bắp/tĩnh mạch trước khi truyền đường (để phòng hội chứng Wernicke).</li>
+                    </ul>
+                `,
+                procedures: 'Đặt nội khí quản bảo vệ đường thở nếu GCS < 8. Theo dõi sát đường huyết (rất dễ hạ đường huyết ở trẻ em và người nghiện rượu).',
+                warning: 'Cần phân biệt với ngộ độc Methanol (Methanol gây toan máu nặng và mù mắt, Ethanol thì không).'
+            },
+            'FoodPoisoning': {
+                name: 'Ngộ độc Thực phẩm (Nhiễm khuẩn/Độc tố)',
+                antidote: `
+                    <p>Điều trị triệu chứng là chính. <b>KHÔNG dùng thuốc cầm tiêu chảy</b> (như Loperamide) trong trường hợp nghi nhiễm khuẩn xâm lấn hoặc tiêu chảy máu.</p>
+                `,
+                procedures: 'Bù nước và điện giải (Oresol hoặc truyền dịch). Kháng sinh nếu có dấu hiệu nhiễm khuẩn hệ thống (Sốt cao, tiêu chảy máu).',
+                warning: 'Cảnh báo tình trạng sốc giảm thể tích và rối loạn điện giải (đặc biệt là hạ Kali máu).'
             }
         };
-
         // --- ĐIỀU HƯỚNG TAB ---
         function switchTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -331,7 +473,7 @@
             btnElement.className = "tab-btn flex-1 bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg whitespace-nowrap shadow-md";
         }
 
-        // --- GỢI Ý NHANH (MỚI) ---
+        // --- GỢI Ý NHANH ---
         function quickSearchPoison() {
             const poisonVal = document.getElementById('quick-poison-select').value;
             if(!poisonVal) {
@@ -354,7 +496,7 @@
                 return;
             }
 
-            let resultTitle = "ĐA ĐỘC CHẤT / KHÔNG ĐIỂN HÌNH";
+            let resultTitle = "ĐA ĐỘC CHẤT / KHÔNG ĐIỂN HÌNH / KHÁC";
             let resultDesc = "Cần làm Khí máu, Điện giải đồ và liên hệ hội chẩn.";
             let causesHTML = "";
 
@@ -376,7 +518,12 @@
             }
             else if (rr === 'nhanh' && mental === 'honme') {
                 resultTitle = "NGHI NGỜ TOAN CHUYỂN HÓA NẶNG";
-                causesHTML = `<button onclick="showProtocol('Methanol')" class="btn-cause w-full text-left bg-slate-100 dark:bg-slate-700 p-4 rounded border-l-4 border-blue-500 font-bold">1. Cồn công nghiệp (Methanol)</button>`;
+                causesHTML = `<button onclick="showProtocol('Methanol')" class="btn-cause w-full text-left bg-slate-100 dark:bg-slate-700 p-4 rounded border-l-4 border-blue-500 font-bold mb-2">1. Cồn công nghiệp (Methanol)</button>
+                              <button class="btn-cause w-full text-left bg-slate-100 dark:bg-slate-700 p-4 rounded border-l-4 border-blue-700 font-bold">2. Ethylene Glycol / Salicylate</button>`;
+            }
+            else if (mental === 'honme' && hr !== 'nhanh' && pupils !== 'gian') {
+                resultTitle = "HỘI CHỨNG AN THẦN / GÂY NGỦ";
+                causesHTML = `<button onclick="showProtocol('Benzodiazepine')" class="btn-cause w-full text-left bg-slate-100 dark:bg-slate-700 p-4 rounded border-l-4 border-slate-500 font-bold">1. Thuốc an thần (Benzodiazepine/Barbiturate)</button>`;
             }
 
             document.getElementById('syndrome-result').innerHTML = `
@@ -385,7 +532,15 @@
                     <p class="text-sm text-slate-700 dark:text-slate-300 mt-1">${resultDesc}</p>
                 </div>
             `;
-            document.getElementById('causes-list').innerHTML = causesHTML;
+            if (causesHTML !== "") {
+                document.getElementById('causes-list').innerHTML = causesHTML;
+                document.getElementById('causes-list').parentElement.classList.remove('hidden');
+            } else {
+                document.getElementById('causes-list').innerHTML = "";
+                // Ẩn tiêu đề "Chọn thủ phạm" nếu không có gợi ý
+                document.getElementById('causes-list').previousElementSibling.style.display = 'none'; 
+            }
+            
             document.getElementById('step-symptoms').classList.add('hidden');
             document.getElementById('step-syndrome').classList.remove('hidden');
         }
@@ -394,7 +549,9 @@
             document.getElementById('step-symptoms').classList.remove('hidden');
             document.getElementById('step-syndrome').classList.add('hidden');
             document.getElementById('step-protocol').classList.add('hidden');
-            document.getElementById('quick-poison-select').value = ""; // Reset dropdown
+            document.getElementById('quick-poison-select').value = "";
+            // Reset lại display của tiêu đề "Chọn thủ phạm"
+            document.getElementById('causes-list').previousElementSibling.style.display = 'block';
         }
 
         function showProtocol(causeKey) {
@@ -404,15 +561,15 @@
             document.getElementById('protocol-content').innerHTML = `
                 <h3 class="text-xl font-bold text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-600 pb-2">${data.name}</h3>
                 <div class="mt-4">
-                    <span class="inline-block bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-200 text-xs px-2 py-1 rounded mb-2 font-bold uppercase">Thuốc Giải (Antidote)</span>
+                    <span class="inline-block bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-200 text-xs px-2 py-1 rounded mb-2 font-bold uppercase tracking-wider">Thuốc Giải (Antidote)</span>
                     <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg text-sm text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">${data.antidote}</div>
                 </div>
                 <div class="mt-4">
-                    <span class="inline-block bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-200 text-xs px-2 py-1 rounded mb-2 font-bold uppercase">Thủ Thuật / Tẩy Độc</span>
+                    <span class="inline-block bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-200 text-xs px-2 py-1 rounded mb-2 font-bold uppercase tracking-wider">Thủ Thuật / Tẩy Độc</span>
                     <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-lg text-sm text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">${data.procedures}</div>
                 </div>
                 <div class="mt-4 bg-amber-50 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 p-4 rounded-lg">
-                    <p class="text-sm text-amber-800 dark:text-amber-300 font-semibold">⚠️ ${data.warning}</p>
+                    <p class="text-sm text-amber-800 dark:text-amber-300 font-semibold">⚠️ CẢNH BÁO: ${data.warning}</p>
                 </div>
             `;
             document.getElementById('step-symptoms').classList.add('hidden');
@@ -420,7 +577,7 @@
             document.getElementById('step-protocol').classList.remove('hidden');
         }
 
-        // --- TÍNH LIỀU THUỐC MỚI (TAB 3) ---
+        // --- TÍNH LIỀU THUỐC ---
         function calculateDose() {
             const weight = parseFloat(document.getElementById('calc-weight').value);
             const drug = document.getElementById('calc-drug').value;

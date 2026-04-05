@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Công cụ Xử trí Suy hô hấp cấp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: { colors: { medical: { 500: '#0ea5e9', 700: '#0369a1', 900: '#0c4a6e' } } }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+        <header class="bg-medical-900 text-white p-4 rounded-lg shadow flex justify-between items-center">
+            <h1 class="text-xl font-bold">Lưu đồ Tiếp cận Suy Hô Hấp Cấp</h1>
+            <span class="text-sm bg-red-500 px-2 py-1 rounded">Cấp cứu</span>
+        </header>
+
+        <section class="bg-white p-6 rounded-lg shadow border-l-4 border-medical-500">
+            <h2 class="text-lg font-bold text-medical-900 mb-4 uppercase">Bước 1: Nhập kết quả KMĐM & Lâm sàng</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-1">PaO2 (mmHg)</label>
+                    <input type="number" id="pao2" class="w-full border p-2 rounded focus:ring-2 focus:ring-medical-500" placeholder="VD: 55">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">PaCO2 (mmHg)</label>
+                    <input type="number" id="paco2" class="w-full border p-2 rounded focus:ring-2 focus:ring-medical-500" placeholder="VD: 35">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold mb-1">pH máu</label>
+                    <input type="number" id="ph" step="0.01" class="w-full border p-2 rounded focus:ring-2 focus:ring-medical-500" placeholder="VD: 7.30">
+                </div>
+                <div class="md:col-span-3 mt-2">
+                    <label class="block text-sm font-semibold mb-1">Dấu hiệu đe dọa tính mạng (Chọn nếu có):</label>
+                    <div class="flex gap-4">
+                        <label class="flex items-center"><input type="checkbox" id="coma" class="mr-2"> Hôn mê / Lơ mơ</label>
+                        <label class="flex items-center"><input type="checkbox" id="shock" class="mr-2"> Tụt huyết áp / Sốc</label>
+                    </div>
+                </div>
+            </div>
+            <button onclick="analyzeData()" class="mt-4 bg-medical-700 hover:bg-medical-900 text-white font-bold py-2 px-6 rounded transition">Phân tích & Hướng dẫn</button>
+        </section>
+
+        <div id="results-area" class="hidden space-y-6">
+            
+            <section class="bg-white p-6 rounded-lg shadow border-l-4" id="classification-card">
+                <h2 class="text-lg font-bold uppercase mb-2" id="type-title">Bước 2: Phân loại...</h2>
+                <p id="type-desc" class="text-sm text-gray-600 mb-4"></p>
+                
+                <div class="bg-gray-50 p-4 rounded border">
+                    <h3 class="font-bold text-gray-800 mb-2">Định hướng nhóm nguyên nhân (Gợi ý):</h3>
+                    <ul id="cause-list" class="list-disc pl-5 space-y-1 text-sm"></ul>
+                </div>
+            </section>
+
+            <section class="bg-white p-6 rounded-lg shadow border-l-4 border-yellow-500">
+                <h2 class="text-lg font-bold text-yellow-700 mb-4 uppercase">Bước 3: Cận lâm sàng đề nghị</h2>
+                <div class="grid md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <h4 class="font-semibold border-b pb-1 mb-2">Thường qui (Tại giường):</h4>
+                        <ul class="list-disc pl-5">
+                            <li>X-quang ngực thẳng (Tại giường).</li>
+                            <li>ECG 12 chuyển đạo.</li>
+                            <li>Siêu âm tại giường (Blue protocol/Echo tim).</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold border-b pb-1 mb-2">Đặc hiệu (Dựa theo phân loại):</h4>
+                        <ul id="lab-list" class="list-disc pl-5 font-medium text-red-600"></ul>
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white p-6 rounded-lg shadow border-l-4 border-red-500">
+                <h2 class="text-lg font-bold text-red-700 mb-4 uppercase">Bước 4: Quản lý & Xử trí ngay</h2>
+                
+                <div id="emergency-alert" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 font-bold">
+                    ⚠️ CHỈ ĐỊNH ĐẶT NỘI KHÍ QUẢN / THỞ MÁY XÂM LẤN NGAY (Có dấu hiệu suy tuần hoàn, rối loạn tri giác hoặc toan hô hấp nặng).
+                </div>
+
+                <div class="space-y-4 text-sm">
+                    <div class="bg-blue-50 p-3 rounded border border-blue-200">
+                        <h4 class="font-bold text-blue-800 mb-1">1. Hỗ trợ Hô hấp (Oxy / Thông khí):</h4>
+                        <p id="resp-support" class="mb-1"></p>
+                    </div>
+                    
+                    <div class="bg-green-50 p-3 rounded border border-green-200">
+                        <h4 class="font-bold text-green-800 mb-1">2. Thuốc & Xử trí đặc hiệu (Đánh giá theo nguyên nhân):</h4>
+                        <ul id="med-list" class="list-disc pl-5"></ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        function analyzeData() {
+            const pao2 = parseFloat(document.getElementById('pao2').value);
+            const paco2 = parseFloat(document.getElementById('paco2').value);
+            const ph = parseFloat(document.getElementById('ph').value);
+            const hasEmergency = document.getElementById('coma').checked || document.getElementById('shock').checked;
+
+            if (!pao2 || !paco2) {
+                alert("Bác sĩ vui lòng nhập ít nhất PaO2 và PaCO2.");
+                return;
+            }
+
+            document.getElementById('results-area').classList.remove('hidden');
+
+            let type = 0; // 1: Giảm O2, 2: Tăng CO2, 3: Hỗn hợp
+            if (pao2 < 60 && paco2 <= 45) type = 1;
+            else if (paco2 > 45 && pao2 >= 60) type = 2;
+            else if (pao2 < 60 && paco2 > 45) type = 3;
+
+            // DOM Elements
+            const cardClass = document.getElementById('classification-card');
+            const title = document.getElementById('type-title');
+            const desc = document.getElementById('type-desc');
+            const causes = document.getElementById('cause-list');
+            const labs = document.getElementById('lab-list');
+            const resp = document.getElementById('resp-support');
+            const meds = document.getElementById('med-list');
+            const alertBox = document.getElementById('emergency-alert');
+
+            // Reset
+            causes.innerHTML = ""; labs.innerHTML = ""; meds.innerHTML = "";
+            
+            // Xử lý cảnh báo đặt NKQ
+            if (hasEmergency || (ph && ph < 7.25 && paco2 > 60)) {
+                alertBox.classList.remove('hidden');
+            } else {
+                alertBox.classList.add('hidden');
+            }
+
+            // Logic theo từng Type
+            if (type === 1) {
+                cardClass.className = "bg-white p-6 rounded-lg shadow border-l-4 border-blue-500";
+                title.innerHTML = "Bước 2: Phân loại - SUY HÔ HẤP TYPE 1 (Suy Phổi)";
+                title.className = "text-lg font-bold uppercase mb-2 text-blue-700";
+                desc.innerHTML = "Đặc trưng: Tổn thương màng phế nang mao mạch (Bất xứng V/Q hoặc Shunt).";
+                
+                causes.innerHTML = `
+                    <li><strong>Bất xứng V/Q (Đáp ứng Oxy):</strong> Hen, COPD, Viêm phổi, Thuyên tắc phổi (PE).</li>
+                    <li><strong>Shunt (Đáp ứng kém Oxy):</strong> Phù phổi cấp do tim, ARDS, Xẹp phổi, Xuất huyết phế nang.</li>`;
+                
+                labs.innerHTML = `
+                    <li>CTPA (Nếu nghi ngờ Thuyên tắc phổi).</li>
+                    <li>BNP/NT-proBNP & Troponin (Phân biệt suy tim/nhồi máu).</li>
+                    <li>Procalcitonin, CRP, Cấy đàm (Nếu nghi ngờ Viêm phổi/Nhiễm trùng).</li>`;
+                
+                resp.innerHTML = "Mục tiêu SpO2: 92-96%. Bắt đầu với Canula mũi -> Mask có túi. Nếu kém đáp ứng nghĩ đến Shunt -> Xét chỉ định HFNC hoặc NIV (đặc biệt tốt cho Phù phổi cấp).";
+                
+                meds.innerHTML = `
+                    <li><strong>Phù phổi cấp:</strong> Lợi tiểu (Furosemide), dãn mạch (Nitroglycerin).</li>
+                    <li><strong>Viêm phổi:</strong> Kháng sinh theo kinh nghiệm sớm.</li>
+                    <li><strong>Thuyên tắc phổi:</strong> Kháng đông (Heparin LMWH/UFH) hoặc tiêu sợi huyết nếu tụt HA.</li>`;
+
+            } else if (type === 2) {
+                cardClass.className = "bg-white p-6 rounded-lg shadow border-l-4 border-yellow-500";
+                title.innerHTML = "Bước 2: Phân loại - SUY HÔ HẤP TYPE 2 (Suy Bơm)";
+                title.className = "text-lg font-bold uppercase mb-2 text-yellow-700";
+                desc.innerHTML = "Đặc trưng: Giảm thông khí phế nang do suy giảm động lực hô hấp.";
+                
+                causes.innerHTML = `
+                    <li><strong>Trung tâm:</strong> Ngộ độc thuốc (Opioid, An thần), Tai biến mạch máu não.</li>
+                    <li><strong>Thần kinh cơ:</strong> Guillain-Barré, Nhược cơ, Chấn thương tủy cổ.</li>
+                    <li><strong>Cơ học:</strong> Gù vẹo cột sống, Mảng sườn di động, Tràn dịch/khí màng phổi lượng nhiều.</li>`;
+                
+                labs.innerHTML = `
+                    <li>Độc chất học (Toxicology screen) trong máu/nước tiểu.</li>
+                    <li>CT Scan sọ não/Cột sống cổ (Nếu nghi tai biến, chấn thương).</li>
+                    <li>Đo chức năng hô hấp / Điện cơ (Nếu nghi bệnh lý thần kinh cơ).</li>`;
+                
+                resp.innerHTML = "Lưu ý: Không dùng Oxy liều cao (Mục tiêu SpO2 88-92% nếu có COPD). Chỉ định sớm Thông khí không xâm lấn (NIV) để thải CO2 nếu bệnh nhân còn tỉnh táo.";
+                
+                meds.innerHTML = `
+                    <li><strong>Ngộ độc:</strong> Giải độc đặc hiệu (Naloxone cho Opioid, Flumazenil cho Benzodiazepine).</li>
+                    <li><strong>Tràn khí/dịch:</strong> Chọc hút hoặc đặt ống dẫn lưu.</li>
+                    <li><strong>Nhược cơ/Guillain-Barré:</strong> Chuẩn bị Lọc máu hoặc Truyền IVIG, tránh dùng thuốc dãn cơ.</li>`;
+
+            } else if (type === 3) {
+                cardClass.className = "bg-white p-6 rounded-lg shadow border-l-4 border-purple-500";
+                title.innerHTML = "Bước 2: Phân loại - SUY HÔ HẤP HỖN HỢP (Type 3 / Giai đoạn cuối)";
+                title.className = "text-lg font-bold uppercase mb-2 text-purple-700";
+                desc.innerHTML = "Đặc trưng: Tổn thương cả nhu mô phổi và suy kiệt cơ hô hấp.";
+                
+                causes.innerHTML = `
+                    <li>Đợt cấp Hen/COPD tiến triển nặng gây kiệt sức cơ hô hấp.</li>
+                    <li>Tình trạng sau mổ bụng/ngực (Xẹp phổi + đau + tác dụng phụ thuốc mê).</li>
+                    <li>Sốc/Giảm tưới máu mô kéo dài.</li>`;
+                
+                labs.innerHTML = `
+                    <li>Kiểm tra Lactate máu (Đánh giá mức độ sốc/thiếu máu mô).</li>
+                    <li>X-quang ngực (Tìm xẹp phổi đáy sau mổ).</li>
+                    <li>Các xét nghiệm tiền phẫu/hậu phẫu liên quan.</li>`;
+                
+                resp.innerHTML = "Nguy cơ cao phải Đặt Nội Khí Quản (Xâm lấn). Có thể thử NIV nghiệm pháp nếu bệnh nhân còn tỉnh và hợp tác trong đợt cấp COPD/Hen.";
+                
+                meds.innerHTML = `
+                    <li><strong>Hen/COPD:</strong> Tối ưu hóa Dãn phế quản (phun khí dung liên tục), Corticoid đường tĩnh mạch.</li>
+                    <li><strong>Sau mổ:</strong> Giảm đau đủ liều (cân nhắc tê ngoài màng cứng thay vì dùng Opioid toàn thân), tập vật lý trị liệu hô hấp.</li>`;
+            } else {
+                title.innerHTML = "Thông số bình thường hoặc chưa đủ mức độ Suy Hô Hấp.";
+                desc.innerHTML = "Vui lòng kiểm tra lại số liệu nhập vào.";
+            }
+        }
+    </script>
+</body>
+</html>

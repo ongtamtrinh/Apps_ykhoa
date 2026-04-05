@@ -54,14 +54,15 @@
                 <button onclick="toggleBlsItem(this); startCprFromBls()" class="bls-item relative flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 transition text-center h-full group overflow-hidden">
                     <span class="text-2xl mb-1">👐</span>
                     <span class="font-bold text-sm text-gray-800">Ép tim (C)</span>
-                    <span class="text-[11px] leading-tight mt-1">30:2 | Sâu 5-6cm | 100-120 l/p | Trải bục cứng</span>
+                    <span class="text-[11px] leading-tight mt-1">30:2 | Sâu 5-6cm | 100-120 l/p | Trải bục cứng | PetCO2 >= 10 mmHg</span>
+                    <span class="text-[11px] leading-tight mt-1"><1t (nhũ nhi): ≥ 1/3 d lồng ngực, #4 cm | 1–10t: ≥ 1/3 d lồng ngực, #5 cm | >55 kg ~ người lớn (5–6 cm)</span>
                     <div class="absolute bottom-0 left-0 w-full bg-red-100 text-red-700 text-[10px] font-bold py-0.5 opacity-0 group-hover:opacity-100 transition translate-y-full group-hover:translate-y-0">Click để chạy đồng hồ CPR</div>
                 </button>
                 
                 <button onclick="toggleBlsItem(this)" class="bls-item relative flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 transition text-center h-full">
                     <span class="text-2xl mb-1">🫁</span>
                     <span class="font-bold text-sm text-gray-800">Đường thở & thông khí (A-B)</span>
-                    <span class="text-[11px] leading-tight mt-1">Thổi ngạt (kèm bịt mũi): mỗi 6s / Mask túi: 10-12 lần/phút / NKQ: 6-10 lần/phút, độc lập với nhấn tim</span>
+                    <span class="text-[11px] leading-tight mt-1">Thổi ngạt & mask túi: 10-12 lần/phút (mỗi 6s) / NKQ: 6-10 lần/phút, độc lập với nhấn tim</span>
                 </button>
                 
                 <button onclick="toggleBlsItem(this); highlightMonitor()" class="bls-item relative flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 transition text-center h-full group overflow-hidden">
@@ -242,8 +243,8 @@
                 <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="bg-white p-3 rounded-xl border border-green-200 shadow-sm text-center">
                         <span class="block text-xs font-bold text-gray-500 uppercase mb-1">Hô hấp (A-B)</span>
-                        <div class="text-xl font-black text-green-700">SpO2 90% – 98% </div>
-                        <div class="text-[11px] font-semibold text-gray-600 mt-1">(PaO2 60 – 105 mmHg)</div>
+                        <div class="text-xl font-black text-green-700">SpO2 90% – 98% (94-98%) </div>
+                        <div class="text-[11px] font-semibold text-gray-600 mt-1">PaO2 60 – 105 mmHg (80-100mmHg)</div>
                         <div class="text-xl font-black text-green-700">PaCO2 35 – 45 mmHg</div>
                         <div class="text-[11px] font-semibold text-gray-600 mt-1">(khi không có nhiễm toan nặng)</div>
                         <div class="text-xl font-black text-green-700">Duy trì 100% FiO2</div>
@@ -259,10 +260,10 @@
                     </div>
                     <div class="bg-white p-3 rounded-xl border border-green-200 shadow-sm text-center">
                         <span class="block text-xs font-bold text-gray-500 uppercase mb-1">Thần kinh & Khác (D-E)</span>
-                        <div class="text-lg font-black text-green-700">Kiểm soát Nhiệt độ</div>
-                        <div class="text-[11px] font-semibold text-gray-600 mt-1">Đánh giá lại BN sau khi hết tác dụng thuốc gây mê & giãn cơ</div>
-                        <div class="text-[11px] font-semibold text-gray-600 mt-1">Đánh giá tri giác & đồng tử.</div>
-                        <div class="text-[11px] font-semibold text-gray-600 mt-1">Ngăn ngừa sốt.</div>
+                        <div class="text-lg font-black text-green-700">Kiểm soát thân nhiệt ̣(32-36oC)</div>
+                        <div class="text-[11px] font-semibold text-gray-600 mt-1">Duy trì hạ thân nhiệt trong 24h</div>
+                        <div class="text-[11px] font-semibold text-gray-600 mt-1">Mục tiêu đường huyết (110-180mg/dL).</div>
+                        <div class="text-[11px] font-semibold text-gray-600 mt-1">Đánh giá thần kinh được khuyến cáo sau 72h</div>
                         <div class="text-lg font-black text-red-700">Có thực hiện được các mệnh lệnh?</div>
                     </div>
                 </div>

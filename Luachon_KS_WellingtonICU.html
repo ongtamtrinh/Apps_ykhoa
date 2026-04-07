@@ -1,200 +1,457 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wellington ICU Antibiotic Portal</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; }
-        .abx-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .abx-card:hover { transform: translateY(-5px); box-shadow: 0 12px 24px -8px rgba(0,0,0,0.1); }
-        .filter-btn.active { background-color: #1e293b; color: white; border-color: #1e293b; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Antibiotic Susceptibilities ICU</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+
+:root, [data-theme="light"] {
+  --color-bg: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-surface-2: #f0f2f5;
+  --color-border: #dde1e8;
+  --color-text: #1a1d23;
+  --color-text-muted: #6b7280;
+  --color-text-faint: #9ca3af;
+  --color-primary: #0f766e;
+  --color-primary-bg: #ccfbf1;
+  --color-gram-pos: #1d4ed8;
+  --color-gram-pos-bg: #eff6ff;
+  --color-gram-pos-border: #bfdbfe;
+  --color-gram-neg: #b91c1c;
+  --color-gram-neg-bg: #fef2f2;
+  --color-gram-neg-border: #fecaca;
+  --color-anaerobe: #7c3aed;
+  --color-anaerobe-bg: #f5f3ff;
+  --color-check: #059669;
+  --class-penicillin: #1d4ed8;
+  --class-lincosamide: #7c3aed;
+  --class-macrolide: #db2777;
+  --class-nitro: #ea580c;
+  --class-rifamycin: #b45309;
+  --class-glycopeptide: #0f766e;
+  --class-sulfonamide: #0891b2;
+  --class-aminoglycoside: #4f46e5;
+  --class-fluoroquinolone: #dc2626;
+  --class-cephalosporin: #16a34a;
+  --class-carbapenem: #9333ea;
+  --class-glycylcycline: #c2410c;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px;
+  --transition: 180ms cubic-bezier(0.16,1,0.3,1);
+}
+
+[data-theme="dark"] {
+  --color-bg: #0f1117;
+  --color-surface: #171922;
+  --color-surface-2: #1e2130;
+  --color-border: #2a2f42;
+  --color-text: #e2e4ea;
+  --color-text-muted: #8b90a0;
+  --color-text-faint: #4a5068;
+  --color-primary: #2dd4bf;
+  --color-primary-bg: #0d2825;
+  --color-gram-pos: #60a5fa;
+  --color-gram-pos-bg: #0d1f3c;
+  --color-gram-pos-border: #1e3a5f;
+  --color-gram-neg: #f87171;
+  --color-gram-neg-bg: #2a0f0f;
+  --color-gram-neg-border: #4a1f1f;
+  --color-anaerobe: #c084fc;
+  --color-anaerobe-bg: #1a0d2e;
+  --color-check: #34d399;
+  --class-penicillin: #60a5fa;
+  --class-lincosamide: #c084fc;
+  --class-macrolide: #f472b6;
+  --class-nitro: #fb923c;
+  --class-rifamycin: #fbbf24;
+  --class-glycopeptide: #2dd4bf;
+  --class-sulfonamide: #22d3ee;
+  --class-aminoglycoside: #818cf8;
+  --class-fluoroquinolone: #f87171;
+  --class-cephalosporin: #4ade80;
+  --class-carbapenem: #c084fc;
+  --class-glycylcycline: #fb923c;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+body { font-family: 'Inter', system-ui, sans-serif; background: var(--color-bg); color: var(--color-text); min-height:100dvh; font-size:14px; line-height:1.5; }
+
+.app-header { background:var(--color-surface); border-bottom:1px solid var(--color-border); padding:12px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; box-shadow:var(--shadow-sm); }
+.app-logo { display:flex; align-items:center; gap:10px; }
+.logo-icon { width:34px; height:34px; background:var(--color-primary); border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; color:#fff; font-size:14px; font-weight:800; flex-shrink:0; font-family:'JetBrains Mono',monospace; }
+[data-theme="dark"] .logo-icon { color:#0f1117; }
+.app-title { font-size:15px; font-weight:700; color:var(--color-text); line-height:1.2; }
+.app-subtitle { font-size:11px; color:var(--color-text-muted); }
+.header-actions { display:flex; align-items:center; gap:8px; }
+.btn-icon { width:34px; height:34px; border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-surface-2); color:var(--color-text-muted); display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all var(--transition); font-size:15px; }
+.btn-icon:hover { color:var(--color-text); background:var(--color-border); }
+
+.search-bar { padding:10px 20px; background:var(--color-surface); border-bottom:1px solid var(--color-border); display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+.search-input-wrap { position:relative; flex:1; min-width:180px; }
+.search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--color-text-faint); pointer-events:none; font-size:13px; }
+.search-input { width:100%; padding:7px 10px 7px 32px; background:var(--color-surface-2); border:1px solid var(--color-border); border-radius:var(--radius-sm); color:var(--color-text); font-size:13px; font-family:inherit; outline:none; transition:border-color var(--transition); }
+.search-input:focus { border-color:var(--color-primary); }
+.search-input::placeholder { color:var(--color-text-faint); }
+.filter-group { display:flex; gap:5px; flex-wrap:wrap; }
+.filter-btn { padding:5px 11px; border-radius:var(--radius-sm); border:1px solid var(--color-border); background:var(--color-surface-2); color:var(--color-text-muted); font-size:12px; font-family:inherit; cursor:pointer; transition:all var(--transition); font-weight:500; }
+.filter-btn:hover { color:var(--color-text); border-color:var(--color-text-muted); }
+.filter-btn.active { background:var(--color-primary); border-color:var(--color-primary); color:#fff; }
+[data-theme="dark"] .filter-btn.active { color:#0f1117; }
+
+.stats-bar { display:flex; gap:16px; padding:8px 20px; background:var(--color-surface-2); border-bottom:1px solid var(--color-border); overflow-x:auto; }
+.stat-item { display:flex; align-items:center; gap:8px; white-space:nowrap; }
+.stat-value { font-size:20px; font-weight:700; font-family:'JetBrains Mono',monospace; color:var(--color-text); font-variant-numeric:tabular-nums; }
+.stat-label { font-size:10px; color:var(--color-text-muted); line-height:1.3; }
+.stat-divider { width:1px; height:28px; background:var(--color-border); }
+
+.main-content { padding:14px 20px; }
+.table-wrapper { background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-lg); overflow:hidden; box-shadow:var(--shadow-sm); overflow-x:auto; }
+
+table { width:100%; border-collapse:collapse; font-size:12px; min-width:940px; }
+
+.gram-header-row th { padding:10px 6px; font-size:12px; font-weight:700; text-align:center; border-bottom:2px solid var(--color-border); letter-spacing:0.04em; text-transform:uppercase; }
+.th-gram-pos { background:var(--color-gram-pos-bg); color:var(--color-gram-pos); border-right:2px solid var(--color-gram-pos-border); }
+.th-gram-neg { background:var(--color-gram-neg-bg); color:var(--color-gram-neg); }
+.th-anaerobe-h { background:var(--color-anaerobe-bg); color:var(--color-anaerobe); border-right:2px solid var(--color-border); }
+.th-antibiotic { background:var(--color-surface-2); color:var(--color-text-muted); border-right:1px solid var(--color-border); width:185px; min-width:165px; text-align:left; padding-left:12px; font-size:11px; }
+
+.organism-header-row th { padding:7px 4px; font-size:10px; font-weight:600; text-align:center; border-bottom:1px solid var(--color-border); vertical-align:bottom; line-height:1.3; cursor:default; }
+.th-org-antibiotic { background:var(--color-surface-2); text-align:left; padding-left:12px; font-size:11px; color:var(--color-text-muted); border-right:1px solid var(--color-border); }
+.th-org-pos { background:var(--color-gram-pos-bg); color:var(--color-gram-pos); }
+.th-org-anaerobe { background:var(--color-anaerobe-bg); color:var(--color-anaerobe); }
+.th-org-neg { background:var(--color-gram-neg-bg); color:var(--color-gram-neg); }
+
+.abx-row { transition:background var(--transition); border-bottom:1px solid var(--color-border); cursor:pointer; }
+.abx-row:last-child { border-bottom:none; }
+.abx-row:hover { background:var(--color-surface-2) !important; }
+.abx-row.dimmed { opacity:0.18; }
+.cell-antibiotic { padding:9px 12px; font-weight:600; font-size:12px; border-right:1px solid var(--color-border); vertical-align:middle; white-space:nowrap; }
+.abx-name { display:flex; align-items:center; gap:6px; }
+.class-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.abx-class-badge { font-size:9px; font-weight:700; letter-spacing:0.04em; padding:1px 5px; border-radius:3px; text-transform:uppercase; white-space:nowrap; }
+.cell-susceptible { text-align:center; vertical-align:middle; padding:6px 3px; border-right:1px solid rgba(128,128,128,0.06); }
+.check-icon { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:4px; background:var(--color-primary-bg); color:var(--color-check); font-size:13px; font-weight:700; }
+.check-partial { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:4px; background:rgba(251,191,36,0.15); color:#d97706; font-size:11px; font-weight:700; }
+[data-theme="dark"] .check-partial { color:#fbbf24; }
+.cell-gram-pos-group { background:rgba(29,78,216,0.025); }
+.cell-anaerobe-group { background:rgba(124,58,237,0.025); }
+.cell-gram-neg-group { background:rgba(185,28,28,0.025); }
+
+.legend { display:flex; flex-wrap:wrap; gap:8px; padding:10px 16px; background:var(--color-surface); border-top:1px solid var(--color-border); }
+.legend-title { font-size:9px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--color-text-faint); align-self:center; margin-right:4px; }
+.legend-item { display:flex; align-items:center; gap:4px; font-size:10px; font-weight:600; color:var(--color-text-muted); }
+.legend-dot { width:8px; height:8px; border-radius:50%; }
+
+.footnotes { margin-top:14px; background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-md); padding:14px 16px; box-shadow:var(--shadow-sm); }
+.footnotes h3 { font-size:10px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:var(--color-text-muted); margin-bottom:8px; }
+.footnote-list { list-style:none; display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:3px 16px; }
+.footnote-list li { font-size:11px; color:var(--color-text-muted); line-height:1.5; padding:2px 0; }
+.footnote-list li strong { color:var(--color-text); }
+
+.info-panel { position:fixed; bottom:20px; right:20px; background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-lg); padding:14px 16px; box-shadow:var(--shadow-md); max-width:290px; z-index:200; display:none; font-size:12px; animation:slideIn 0.2s ease; }
+@keyframes slideIn { from{transform:translateY(10px);opacity:0} to{transform:translateY(0);opacity:1} }
+.info-panel.visible { display:block; }
+.info-panel h4 { font-size:14px; font-weight:700; margin-bottom:6px; color:var(--color-text); }
+.info-panel p { color:var(--color-text-muted); line-height:1.6; }
+.info-close { position:absolute; top:8px; right:8px; background:none; border:none; color:var(--color-text-faint); cursor:pointer; font-size:14px; }
+.info-close:hover { color:var(--color-text); }
+
+[data-tooltip] { position:relative; cursor:help; }
+[data-tooltip]:hover::after { content:attr(data-tooltip); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:var(--color-text); color:var(--color-bg); font-size:10px; padding:4px 8px; border-radius:4px; pointer-events:none; z-index:300; max-width:200px; white-space:normal; text-align:center; line-height:1.4; }
+
+@media (max-width:768px) { .main-content{padding:10px} .app-header,.search-bar,.stats-bar{padding-left:12px;padding-right:12px} .footnote-list{grid-template-columns:1fr} }
+</style>
 </head>
-<body class="min-h-screen">
+<body>
 
-    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-                        <span class="p-2 bg-blue-600 rounded-lg text-white"><i class="fa-solid fa-pills"></i></span>
-                        Wellington ICU Antibiotics
-                    </h1>
-                    <p class="text-[10px] text-slate-500 font-medium uppercase tracking-widest mt-1">Drug Manual - Appendix 5</p>
-                </div>
-                
-                <div class="relative group">
-                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-3.5 text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
-                    <input type="text" id="searchInput" onkeyup="renderApp()" 
-                        placeholder="Tìm kháng sinh hoặc vi khuẩn..." 
-                        class="w-full md:w-[400px] pl-12 pr-4 py-3 bg-slate-100 border-transparent rounded-2xl focus:bg-white focus:ring-4 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all shadow-inner">
-                </div>
-            </div>
-        </div>
-    </nav>
+<header class="app-header">
+  <div class="app-logo">
+    <div class="logo-icon">Rx</div>
+    <div>
+      <div class="app-title">Antibiotic Susceptibility — ICU</div>
+      <div class="app-subtitle">Wellington ICU Drug Manual · v2h 2017-09 · psirides</div>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-icon" data-theme-toggle title="Toggle dark/light mode">☀️</button>
+  </div>
+</header>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        <div class="flex flex-wrap gap-2 mb-8" id="filterContainer">
-            </div>
+<div class="search-bar">
+  <div class="search-input-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" type="text" id="searchInput" placeholder="Tìm kháng sinh..." autocomplete="off">
+  </div>
+  <div class="filter-group">
+    <button class="filter-btn active" data-filter="all">Tất cả</button>
+    <button class="filter-btn" data-filter="gram-pos">Gram (+)</button>
+    <button class="filter-btn" data-filter="gram-neg">Gram (−)</button>
+    <button class="filter-btn" data-filter="anaerobe">Kị khí</button>
+    <button class="filter-btn" data-filter="broad">Phổ rộng</button>
+  </div>
+</div>
 
-        <div id="abxGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            </div>
+<div class="stats-bar">
+  <div class="stat-item">
+    <div class="stat-value" id="stat-abx">28</div>
+    <div class="stat-label">Kháng sinh<br>hiển thị</div>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat-item">
+    <div class="stat-value">18</div>
+    <div class="stat-label">Vi khuẩn<br>liệt kê</div>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat-item">
+    <div class="stat-value">12</div>
+    <div class="stat-label">Nhóm<br>kháng sinh</div>
+  </div>
+  <div class="stat-divider"></div>
+  <div class="stat-item" id="filter-stat" style="display:none">
+    <div class="stat-value" id="stat-filter" style="font-size:13px;color:var(--color-primary)">—</div>
+    <div class="stat-label">Bộ lọc<br>đang dùng</div>
+  </div>
+</div>
 
-        <section class="mt-16 border-t border-slate-200 pt-10">
-            <h2 class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
-                <i class="fa-solid fa-clipboard-list text-blue-600"></i>
-                Clinical Guidance & Definitions
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
-                <div class="bg-white p-5 rounded-2xl border border-slate-200">
-                    <h4 class="font-bold text-slate-700 mb-2 underline decoration-blue-500">ESCHAPPM² Organisms</h4>
-                    <p class="text-slate-500 leading-relaxed">Enterobacter, Serratia, Citrobacter freundii, Hafnia, Acinetobacter/Aeromonas, Proteus (not mirabilis), Providencia & Morganella morganii.</p>
-                </div>
-                <div class="bg-amber-50 p-5 rounded-2xl border border-amber-100">
-                    <h4 class="font-bold text-amber-800 mb-2 underline">ESBL Rules</h4>
-                    <p class="text-amber-700 leading-relaxed">ESBL-producing organisms are resistant to most beta-lactams. Carbapenems are the agent of choice.</p>
-                </div>
-                <div class="bg-blue-50 p-5 rounded-2xl border border-blue-100 text-blue-800">
-                    <h4 class="font-bold mb-2 underline">C. difficile Protocol</h4>
-                    <p class="leading-relaxed">C. difficile should ONLY be treated with Metronidazole or Vancomycin (Oral).</p>
-                </div>
-            </div>
-        </section>
-    </main>
+<div class="main-content">
+<div class="table-wrapper">
+<table id="abxTable">
+<thead>
+  <tr class="gram-header-row">
+    <th class="th-antibiotic" rowspan="2">Kháng sinh</th>
+    <th class="th-gram-pos" colspan="6">GRAM DƯƠNG (Gram Positive)</th>
+    <th class="th-anaerobe-h" colspan="2">KỊ KHÍ (Anaerobes)</th>
+    <th class="th-gram-neg" colspan="9">GRAM ÂM (Gram Negative)</th>
+  </tr>
+  <tr class="organism-header-row">
+    <th class="th-org-pos" data-tooltip="Methicillin-resistant S. aureus">MRSA</th>
+    <th class="th-org-pos" data-tooltip="S. epidermidis (coagulase-negative Staphylococcus)">S. epid.</th>
+    <th class="th-org-pos" data-tooltip="Methicillin-sensitive S. aureus">MSSA</th>
+    <th class="th-org-pos" data-tooltip="Enterococcus faecium">E. faecium</th>
+    <th class="th-org-pos" data-tooltip="Enterococcus faecalis">E. faecalis</th>
+    <th class="th-org-pos" data-tooltip="Streptococcus spp.">Strep.</th>
+    <th class="th-org-anaerobe" data-tooltip="Clostridium (C. difficile chỉ dùng metro/vanco)">Clostrid.</th>
+    <th class="th-org-anaerobe" style="border-right:2px solid var(--color-border)" data-tooltip="Bacteroides, Fusobacterium">Bact./Fuso.</th>
+    <th class="th-org-neg" data-tooltip="Neisseria meningitidis">N. mening.</th>
+    <th class="th-org-neg" data-tooltip="Haemophilus influenzae">H. flu.</th>
+    <th class="th-org-neg" data-tooltip="Moraxella catarrhalis">Moraxella</th>
+    <th class="th-org-neg" data-tooltip="Escherichia coli">E. coli</th>
+    <th class="th-org-neg" data-tooltip="Klebsiella pneumoniae">Klebsiella</th>
+    <th class="th-org-neg" data-tooltip="Proteus mirabilis">P. mirabilis</th>
+    <th class="th-org-neg" data-tooltip="Pseudomonas aeruginosa">Pseudo.</th>
+    <th class="th-org-neg" data-tooltip="ESCHAPPM: Enterobacter, Serratia, Citrobacter freundii, Hafnia, Acinetobacter, Proteus (non-mirabilis), Providencia, Morganella">ESCHAPPM</th>
+    <th class="th-org-neg" data-tooltip="Legionella pneumophila (atypical)">Legionella</th>
+  </tr>
+</thead>
+<tbody id="tableBody"></tbody>
+</table>
+</div>
 
-    <script>
-        // Full Data from Wellington ICU Summary [cite: 17-78]
-        const antibioticData = [
-            // PENICILLINS 
-            { name: "Penicillin", class: "PENICILLINS", gramPos: ["Streptococcus"], gramNeg: ["Neisseria"], anaerobes: ["Peptostreptococcus", "Fusobacterium"], notes: ["Phổ hẹp cho cầu khuẩn dương."] },
-            { name: "Amoxicillin", class: "PENICILLINS", gramPos: ["Streptococcus", "Enterococcus faecalis"], gramNeg: ["Neisseria", "Haemophilus influenzae"], anaerobes: ["Peptostreptococcus", "Fusobacterium"], notes: ["Không hiệu quả với Clostridium."] },
-            { name: "Amoxicillin-clavulanate", class: "PENICILLINS", gramPos: ["Streptococcus", "MSSA", "Enterococcus faecalis"], gramNeg: ["Neisseria", "Haemophilus", "Moraxella", "E.coli", "Klebsiella", "Proteus mirabilis"], anaerobes: ["Hầu hết (gồm Clostridium)"], notes: ["Phổ rộng cộng đồng."] },
-            { name: "Flucloxacillin", class: "PENICILLINS", gramPos: ["MSSA"], gramNeg: [], anaerobes: [], notes: ["Đặc hiệu cho tụ cầu nhạy methicillin."] },
-            { name: "Piperacillin-tazobactam", class: "PENICILLINS", gramPos: ["Streptococcus", "MSSA", "Enterococcus faecalis"], gramNeg: ["E.coli", "Klebsiella", "Proteus", "Pseudomonas", "ESCHAPPM²"], anaerobes: ["Hầu hết"], notes: ["Kháng sinh ICU chủ lực."] },
-            { name: "Ticarcillin-clavulanate", class: "PENICILLINS", gramPos: ["Streptococcus", "MSSA"], gramNeg: ["E.coli", "Klebsiella", "Pseudomonas", "ESCHAPPM²"], anaerobes: ["Hầu hết"], notes: ["Bao phủ trực khuẩn mủ xanh."] },
+<div class="table-wrapper" style="margin-top:0;border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg)">
+  <div class="legend">
+    <span class="legend-title">Nhóm:</span>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--class-penicillin)"></span>Penicillins</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--class-lincosamide)"></span>Lincosamide</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--class-macrolide)"></span>Macrolides</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--class-nitro)"></span>Nitroimidazole</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--class-rifamycin)"></span>Rifamycin</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--class-glycopeptide)"></span>Glycopeptides</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--class-sulfonamide)"></span>Sulfonamides</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--class-aminoglycoside)"></span>Aminoglycosides</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--class-fluoroquinolone)"></span>Fluoroquinolones</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--class-cephalosporin)"></span>Cephalosporins</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--class-carbapenem)"></span>Carbapenems</div>
+    <div class="legend-item"><span class="legend-dot" style="background:var(--class-glycylcycline)"></span>Glycylcycline</div>
+    <div style="margin-left:auto;display:flex;gap:10px;align-items:center;">
+      <div class="legend-item"><span class="check-icon" style="width:18px;height:18px;font-size:11px;display:inline-flex;align-items:center;justify-content:center;border-radius:3px;background:var(--color-primary-bg);color:var(--color-check);">✓</span>&nbsp;Nhạy cảm</div>
+      <div class="legend-item"><span class="check-partial" style="width:18px;height:18px;font-size:10px;display:inline-flex;align-items:center;justify-content:center;border-radius:3px;background:rgba(251,191,36,0.15);color:#d97706;">~</span>&nbsp;Không đơn trị</div>
+    </div>
+  </div>
+</div>
 
-            // CEPHALOSPORINS 
-            { name: "Cephazolin", class: "CEPHALOSPORINS", gramPos: ["Streptococcus", "MSSA"], gramNeg: ["E.coli", "Klebsiella", "Proteus mirabilis"], anaerobes: [], notes: ["Dự phòng phẫu thuật phổ biến."] },
-            { name: "Cefuroxime", class: "CEPHALOSPORINS", gramPos: ["Streptococcus", "MSSA"], gramNeg: ["Neisseria", "Haemophilus", "E.coli", "Klebsiella"], anaerobes: [], notes: ["Không khuyên dùng cho Moraxella do MIC tăng[cite: 77]."] },
-            { name: "Ceftriaxone", class: "CEPHALOSPORINS", gramPos: ["Streptococcus", "MSSA"], gramNeg: ["Neisseria", "Haemophilus", "E.coli", "Klebsiella", "Proteus mirabilis"], anaerobes: [], notes: ["Thế hệ 3, xâm nhập thần kinh tốt."] },
-            { name: "Ceftazidime", class: "CEPHALOSPORINS", gramPos: [], gramNeg: ["Pseudomonas"], anaerobes: [], notes: ["CHỈ nên dùng cho Pseudomonas."] },
-            { name: "Cefepime", class: "CEPHALOSPORINS", gramPos: ["Streptococcus", "MSSA"], gramNeg: ["E.coli", "Klebsiella", "Proteus", "Pseudomonas", "ESCHAPPM²"], anaerobes: [], notes: ["Thế hệ 4, phổ Gram âm rất rộng."] },
+<div class="footnotes">
+  <h3>⚠ Lưu ý quan trọng</h3>
+  <ul class="footnote-list">
+    <li><strong>1. C. difficile:</strong> Chỉ điều trị bằng metronidazole hoặc vancomycin.</li>
+    <li><strong>2. ESCHAPPM:</strong> Vi khuẩn sinh β-lactamase: Enterobacter, Serratia, Citrobacter freundii, Hafnia, Acinetobacter/Aeromonas, Proteus (không mirabilis), Providencia & Morganella morganii.</li>
+    <li><strong>3. Clostridium:</strong> Amoxicillin, Clindamycin và Moxifloxacin không hiệu quả với Clostridium.</li>
+    <li><strong>4. Metronidazole:</strong> Không hiệu quả với Peptostreptococcus.</li>
+    <li><strong>5. Teicoplanin:</strong> Không hiệu quả với Enterococcus faecium.</li>
+    <li><strong>6. Gentamicin:</strong> Không dùng đơn độc cho S. aureus — phải phối hợp β-lactam.</li>
+    <li><strong>7. Cefuroxime:</strong> Không khuyến cáo cho Moraxella do MIC tăng.</li>
+    <li><strong>8. Ceftazidime:</strong> Chỉ nên dùng cho Pseudomonas aeruginosa.</li>
+    <li><strong>ESBL:</strong> Carbapenem là lựa chọn thông thường cho vi khuẩn ESBL.</li>
+    <li><strong>* Lưu ý:</strong> Bảng này chỉ mang tính hướng dẫn — không thay thế tư vấn chuyên gia và kháng sinh đồ cụ thể.</li>
+  </ul>
+</div>
+</div>
 
-            // CARBAPENEMS 
-            { name: "Meropenem", class: "CARBAPENEMS", gramPos: ["Streptococcus", "MSSA"], gramNeg: ["Tất cả Gram âm"], anaerobes: ["Tất cả kỵ khí"], notes: ["Lựa chọn cho vi khuẩn sinh ESBL."] },
-            { name: "Imipenem", class: "CARBAPENEMS", gramPos: ["Streptococcus", "MSSA", "Enterococcus faecalis"], gramNeg: ["Tất cả Gram âm"], anaerobes: ["Tất cả kỵ khí"], notes: ["Phổ tương tự Meropenem."] },
-            { name: "Ertapenem", class: "CARBAPENEMS", gramPos: ["Streptococcus", "MSSA"], gramNeg: ["E.coli", "Klebsiella", "ESCHAPPM²"], anaerobes: ["Hầu hết"], notes: ["KHÔNG bao phủ Pseudomonas."] },
+<div class="info-panel" id="infoPanel">
+  <button class="info-close" onclick="document.getElementById('infoPanel').classList.remove('visible')">✕</button>
+  <h4 id="infoPanelTitle"></h4>
+  <p id="infoPanelBody"></p>
+</div>
 
-            // GLYCOPEPTIDES & OTHERS 
-            { name: "Vancomycin", class: "GLYCOPEPTIDES", gramPos: ["MRSA", "MSSA", "Streptococcus", "Enterococcus", "S. epidermidis"], gramNeg: [], anaerobes: ["C. difficile"], notes: ["Lựa chọn đầu tay cho MRSA."] },
-            { name: "Teicoplanin", class: "GLYCOPEPTIDES", gramPos: ["MRSA", "MSSA", "Streptococcus", "Enterococcus (không Faecium)"], gramNeg: [], anaerobes: [], notes: ["Không hiệu quả cho E. faecium."] },
-            { name: "Linezolid", class: "OXAZOLIDINONES", gramPos: ["MRSA", "VRE", "Tất cả Gram dương"], gramNeg: [], anaerobes: [], notes: ["Dành cho Gram dương đa kháng."] },
-            { name: "Daptomycin", class: "LIPOPEPTIDES", gramPos: ["MRSA", "VRE", "Tất cả Gram dương"], gramNeg: [], anaerobes: [], notes: ["Không dùng cho viêm phổi."] },
+<script>
+const ABX_CLASSES = {
+  penicillin:     { label: 'PCN', color: 'var(--class-penicillin)' },
+  lincosamide:    { label: 'LNS', color: 'var(--class-lincosamide)' },
+  macrolide:      { label: 'MAC', color: 'var(--class-macrolide)' },
+  nitroimidazole: { label: 'NIT', color: 'var(--class-nitro)' },
+  rifamycin:      { label: 'RIF', color: 'var(--class-rifamycin)' },
+  glycopeptide:   { label: 'GCP', color: 'var(--class-glycopeptide)' },
+  sulfonamide:    { label: 'SUL', color: 'var(--class-sulfonamide)' },
+  aminoglycoside: { label: 'AMG', color: 'var(--class-aminoglycoside)' },
+  fluoroquinolone:{ label: 'FQN', color: 'var(--class-fluoroquinolone)' },
+  cephalosporin:  { label: 'CPH', color: 'var(--class-cephalosporin)' },
+  carbapenem:     { label: 'CBP', color: 'var(--class-carbapenem)' },
+  glycylcycline:  { label: 'GLC', color: 'var(--class-glycylcycline)' },
+};
 
-            // AMINOGLYCOSIDES 
-            { name: "Gentamicin", class: "AMINOGLYCOSIDES", gramPos: ["S. aureus (Synergy)"], gramNeg: ["E.coli", "Klebsiella", "Pseudomonas", "ESCHAPPM²"], anaerobes: [], notes: ["Chỉ dùng phối hợp cho S. aureus, không đơn trị."] },
-            { name: "Tobramycin", class: "AMINOGLYCOSIDES", gramPos: [], gramNeg: ["Pseudomonas", "Gram âm trực khuẩn"], anaerobes: [], notes: ["Mạnh trên Pseudomonas."] },
+// S=susceptible, P=partial/adjunct, 0=not active
+// Cols: MRSA,S.epid,MSSA,E.faecium,E.faecalis,Strep,Clostrid,Bact/Fuso,N.mening,H.flu,Moraxella,E.coli,Klebsiella,P.mirabilis,Pseudo,ESCHAPPM,Legionella
+const antibiotics = [
+  { name:'Penicillin',             class:'penicillin',      tags:['gram-pos'],              sus:[0,0,0,0,0,'S',0,0,'S',0,0,0,0,0,0,0,0], note:'Phổ hẹp. Streptococcus và N. meningitidis.' },
+  { name:'Amoxicillin',            class:'penicillin',      tags:['gram-pos','gram-neg'],   sus:[0,0,0,0,0,'S',0,0,'S','S',0,0,0,0,0,0,0], note:'Lưu ý 3: không hiệu quả Clostridium.' },
+  { name:'Amoxicillin-clavulanate',class:'penicillin',      tags:['gram-pos','gram-neg','broad'], sus:[0,0,0,0,0,0,0,0,'S','S','S','S','S','S',0,0,0], note:'Kháng beta-lactamase. Phổ rộng hơn amoxicillin.' },
+  { name:'Flucloxacillin',         class:'penicillin',      tags:['gram-pos'],              sus:[0,0,'S',0,0,'S',0,0,0,0,0,0,0,0,0,0,0], note:'Chống tụ cầu. KHÔNG tác dụng với MRSA.' },
+  { name:'Piperacillin-tazobactam',class:'penicillin',      tags:['gram-neg','broad'],      sus:[0,0,'S',0,0,0,0,0,0,0,0,'S','S','S','S','S',0], note:'Phổ rộng bao gồm Pseudomonas.' },
+  { name:'Ticarcillin-clavulanate',class:'penicillin',      tags:['gram-neg','broad'],      sus:[0,0,0,0,0,0,0,0,0,0,0,'S','S','S','S','S',0], note:'Phổ rộng Gram âm.' },
+  { name:'Clindamycin',            class:'lincosamide',     tags:['gram-pos','anaerobe'],   sus:['S',0,'S',0,0,'S',0,'S',0,0,0,0,0,0,0,0,0], note:'Lưu ý 3: không Clostridium. Tốt với Gram dương và kị khí.' },
+  { name:'Azithromycin / Erythromycin',class:'macrolide',  tags:['gram-pos','gram-neg'],   sus:[0,0,0,0,0,'S',0,0,0,0,0,0,0,0,0,0,'S'], note:'Streptococcus và Legionella (vi khuẩn không điển hình).' },
+  { name:'Metronidazole',          class:'nitroimidazole',  tags:['anaerobe'],              sus:[0,0,0,0,0,0,'S','S',0,0,0,0,0,0,0,0,0], note:'Lưu ý 4: không Peptostreptococcus. Dùng C. difficile (lưu ý 1).' },
+  { name:'Rifampicin / Fusidic Acid',class:'rifamycin',    tags:['gram-pos'],              sus:['S','S','S',0,0,0,0,0,'P',0,0,0,0,0,0,0,0], note:'Rifampicin dùng phối hợp. Fusidic acid cho S. aureus.' },
+  { name:'Vancomycin / Teicoplanin',class:'glycopeptide',   tags:['gram-pos'],              sus:['S','S','S','P','S','S','S',0,0,0,0,0,0,0,0,0,0], note:'Lưu ý 5: Teicoplanin không E. faecium. Vancomycin: MRSA.' },
+  { name:'Linezolid',              class:'glycopeptide',    tags:['gram-pos'],              sus:['S','S','S','S','S','S',0,0,0,0,0,0,0,0,0,0,0], note:'Hiệu quả với VRE, MRSA và toàn bộ Gram dương.' },
+  { name:'Daptomycin',             class:'glycopeptide',    tags:['gram-pos'],              sus:['S','S','S','S','S','S',0,0,0,0,0,0,0,0,0,0,0], note:'Diệt khuẩn Gram dương. Không dùng viêm phổi (bị surfactant ức chế).' },
+  { name:'Co-trimoxazole',         class:'sulfonamide',     tags:['gram-pos','gram-neg','broad'], sus:[0,0,0,0,0,0,0,0,'S','S','S','S','S','S',0,0,'S'], note:'Phổ rộng. Gram dương và Gram âm nhất định. Legionella.' },
+  { name:'Trimethoprim',           class:'sulfonamide',     tags:['gram-neg'],              sus:[0,0,0,0,0,0,0,0,0,0,0,'S','S','S',0,0,0], note:'Thường dùng cho nhiễm khuẩn tiết niệu.' },
+  { name:'Gentamicin',             class:'aminoglycoside',  tags:['gram-pos','gram-neg'],   sus:['P','P','P',0,'P',0,0,0,0,0,0,'S','S','S','S',0,0], note:'Lưu ý 6: không đơn độc cho S. aureus — phối hợp β-lactam.' },
+  { name:'Gentamicin / Tobramycin',class:'aminoglycoside',  tags:['gram-neg'],              sus:[0,0,0,0,0,0,0,0,0,0,0,'S','S','S','S',0,0], note:'Tobramycin có hoạt tính tốt hơn với Pseudomonas.' },
+  { name:'Ciprofloxacin',          class:'fluoroquinolone', tags:['gram-neg','broad'],      sus:[0,0,0,0,0,0,0,0,0,0,0,'S','S','S','S','S','S'], note:'Phổ rộng Gram âm. Pseudomonas và Legionella.' },
+  { name:'Moxifloxacin',           class:'fluoroquinolone', tags:['gram-pos','gram-neg','broad'], sus:[0,'S','S',0,0,0,0,'S','S','S','S',0,0,0,0,0,'S'], note:'Lưu ý 3: không Clostridium. Phổ hơn cipro, bao Gram dương.' },
+  { name:'Aztreonam',              class:'fluoroquinolone', tags:['gram-neg'],              sus:[0,0,0,0,0,0,0,0,0,0,0,'S','S','S','S',0,0], note:'Monobactam. Chỉ Gram âm hiếu khí.' },
+  { name:'Cephazolin (Gen 1)',     class:'cephalosporin',   tags:['gram-pos','gram-neg'],   sus:[0,'S','S',0,0,'S',0,0,'S','S',0,'S','S','S',0,0,0], note:'Cephalosporin thế hệ 1. Tốt cho Gram dương và một số Gram âm.' },
+  { name:'Cefuroxime (Gen 2)',     class:'cephalosporin',   tags:['gram-pos','gram-neg'],   sus:[0,0,'S',0,0,'S',0,0,'S','S','P','S','S','S',0,0,0], note:'Lưu ý 7: không khuyến cáo cho Moraxella do MIC tăng.' },
+  { name:'Ceftriaxone (Gen 3)',    class:'cephalosporin',   tags:['gram-pos','gram-neg','broad'], sus:[0,0,'S',0,0,'S',0,0,'S','S','S','S','S','S',0,0,0], note:'Cephalosporin thế hệ 3. Dùng rộng rãi trong ICU.' },
+  { name:'Ceftazidime (Gen 3)',    class:'cephalosporin',   tags:['gram-neg'],              sus:[0,0,0,0,0,0,0,0,0,0,0,0,0,0,'S',0,0], note:'Lưu ý 8: chỉ nên dùng cho Pseudomonas aeruginosa.' },
+  { name:'Cefepime (Gen 4)',       class:'cephalosporin',   tags:['gram-neg','broad'],      sus:[0,0,0,0,0,0,0,0,0,0,0,'S','S','S','S','S',0], note:'Cephalosporin thế hệ 4. Phổ rộng hơn ceftazidime.' },
+  { name:'Meropenem / Imipenem',   class:'carbapenem',      tags:['gram-pos','gram-neg','broad','anaerobe'], sus:[0,'S','S',0,'S','S','S','S','S','S','S','S','S','S','S','S',0], note:'Phổ cực rộng. Lựa chọn ESBL. Imipenem không cho MRSA.' },
+  { name:'Ertapenem',              class:'carbapenem',      tags:['gram-neg','broad','anaerobe'], sus:[0,0,0,0,0,'S',0,'S',0,'S','S','S','S','S',0,'S',0], note:'Không bao Pseudomonas. Tốt cho ESBL Enterobacteriaceae.' },
+  { name:'Tigecycline',            class:'glycylcycline',   tags:['gram-pos','gram-neg','broad','anaerobe'], sus:[0,'S','S',0,0,0,0,0,0,'S','S','S','S',0,0,'S','S'], note:'Phổ rộng nhất. Không Pseudomonas và Proteus mirabilis.' },
+];
 
-            // FLUOROQUINOLONES 
-            { name: "Ciprofloxacin", class: "FLUOROQUINOLONES", gramPos: [], gramNeg: ["Pseudomonas", "Haemophilus", "E.coli", "Klebsiella"], anaerobes: [], notes: ["Kháng sinh đường uống mạnh cho Gram âm."] },
-            { name: "Moxifloxacin", class: "FLUOROQUINOLONES", gramPos: ["Streptococcus", "MSSA"], gramNeg: ["Haemophilus", "Moraxella", "E.coli"], anaerobes: ["Bacteroides", "Fusobacterium"], notes: ["Bao phủ kỵ khí trừ Clostridium."] },
+const orgGroups = [
+  {start:0, end:5, cls:'cell-gram-pos-group'},
+  {start:6, end:7, cls:'cell-anaerobe-group'},
+  {start:8, end:16, cls:'cell-gram-neg-group'},
+];
 
-            // MACROLIDES & LINCOSAMIDES [cite: 23-28]
-            { name: "Clindamycin", class: "LINCOSAMIDE", gramPos: ["Streptococcus", "MSSA", "S. epidermidis"], gramNeg: [], anaerobes: ["Bacteroides", "Fusobacterium", "Peptostreptococcus"], notes: ["Không hiệu quả với Clostridium."] },
-            { name: "Azithromycin", class: "MACROLIDES", gramPos: ["Streptococcus"], gramNeg: ["Haemophilus", "Legionella"], anaerobes: [], notes: ["Dùng cho vi khuẩn không điển hình."] },
+function getCellCls(i) {
+  for (const g of orgGroups) if (i >= g.start && i <= g.end) return g.cls;
+  return '';
+}
 
-            // SPECIALS [cite: 29-32, 51-55]
-            { name: "Metronidazole", class: "NITROIMIDAZOLE", gramPos: [], gramNeg: [], anaerobes: ["Bacteroides", "Fusobacterium", "Clostridium"], notes: ["Không hiệu quả với Peptostreptococcus."] },
-            { name: "Co-trimoxazole", class: "SULFONAMIDES", gramPos: ["MRSA", "MSSA"], gramNeg: ["Haemophilus", "E.coli", "Klebsiella"], anaerobes: [], notes: ["Dùng cho Stenotrophomonas."] },
-            { name: "Tigecycline", class: "GLYCYLCYCLINE", gramPos: ["Tất cả Gram dương"], gramNeg: ["E.coli", "Klebsiella", "ESCHAPPM²"], anaerobes: ["Hầu hết"], notes: ["Không bao phủ Pseudomonas & Proteus."] },
-            { name: "Fusidic Acid", class: "RIFAMYCIN", gramPos: ["MSSA", "MRSA"], gramNeg: [], anaerobes: [], notes: ["Thường phối hợp cho tụ cầu."] }
-        ];
+function buildRows(data) {
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+  data.forEach(abx => {
+    const cls = ABX_CLASSES[abx.class];
+    const tr = document.createElement('tr');
+    tr.className = 'abx-row';
+    tr.dataset.name = abx.name.toLowerCase();
+    tr.dataset.tags = abx.tags.join(',');
 
-        let activeFilter = 'Tất cả';
+    let cells = `<td class="cell-antibiotic">
+      <div class="abx-name">
+        <span class="class-dot" style="background:${cls.color}"></span>
+        <span>${abx.name}</span>
+        <span class="abx-class-badge" style="background:${cls.color}22;color:${cls.color}">${cls.label}</span>
+      </div>
+    </td>`;
 
-        function renderApp() {
-            const grid = document.getElementById('abxGrid');
-            const search = document.getElementById('searchInput').value.toLowerCase();
-            grid.innerHTML = '';
+    abx.sus.forEach((s, i) => {
+      const grp = getCellCls(i);
+      let icon = '';
+      if (s === 'S') icon = '<span class="check-icon">✓</span>';
+      else if (s === 'P') icon = '<span class="check-partial" title="Không dùng đơn độc">~</span>';
+      cells += `<td class="cell-susceptible ${grp}">${icon}</td>`;
+    });
 
-            const filtered = antibioticData.filter(item => {
-                const matchesSearch = item.name.toLowerCase().includes(search) || 
-                                     item.gramNeg.some(g => g.toLowerCase().includes(search)) ||
-                                     item.gramPos.some(p => p.toLowerCase().includes(search));
-                const matchesFilter = activeFilter === 'Tất cả' || item.class === activeFilter;
-                return matchesSearch && matchesFilter;
-            });
+    tr.innerHTML = cells;
+    tr.addEventListener('click', () => {
+      document.getElementById('infoPanelTitle').textContent = abx.name;
+      document.getElementById('infoPanelBody').innerHTML = 
+        `<span class="abx-class-badge" style="background:${cls.color}22;color:${cls.color};margin-bottom:8px;display:inline-block;padding:2px 8px">${abx.class.toUpperCase()}</span><br><br>${abx.note}`;
+      document.getElementById('infoPanel').classList.add('visible');
+    });
+    tbody.appendChild(tr);
+  });
+  document.getElementById('stat-abx').textContent = data.length;
+}
 
-            filtered.forEach(abx => {
-                const card = `
-                    <div class="bg-white rounded-3xl border border-slate-200 p-6 abx-card flex flex-col justify-between">
-                        <div>
-                            <div class="flex justify-between items-center mb-4">
-                                <span class="text-[9px] font-bold px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full uppercase tracking-widest">${abx.class}</span>
-                                <span class="h-2 w-2 rounded-full ${abx.gramNeg.length > 5 ? 'bg-red-500' : 'bg-green-500'}"></span>
-                            </div>
-                            <h3 class="text-xl font-extrabold text-slate-800 mb-5">${abx.name}</h3>
-                            
-                            <div class="space-y-4">
-                                ${renderList("Gram Dương", abx.gramPos, "blue")}
-                                ${renderList("Gram Âm", abx.gramNeg, "rose")}
-                                ${renderList("Kỵ Khí", abx.anaerobes, "emerald")}
-                            </div>
-                        </div>
+let currentFilter = 'all', currentSearch = '';
 
-                        <div class="mt-8 pt-4 border-t border-slate-50">
-                            ${abx.notes.map(n => `<p class="text-[11px] text-slate-500 leading-relaxed italic"><i class="fa-solid fa-circle-exclamation text-amber-400 mr-1.5"></i>${n}</p>`).join('')}
-                        </div>
-                    </div>
-                `;
-                grid.innerHTML += card;
-            });
-        }
+function applyFilters() {
+  const rows = document.querySelectorAll('.abx-row');
+  let visible = 0;
+  rows.forEach(row => {
+    const name = row.dataset.name || '';
+    const tags = (row.dataset.tags || '').split(',');
+    const matchSearch = !currentSearch || name.includes(currentSearch.toLowerCase());
+    let matchFilter = true;
+    if (currentFilter !== 'all') {
+      matchFilter = currentFilter === 'broad' ? tags.includes('broad') : tags.includes(currentFilter);
+    }
+    const show = matchSearch && matchFilter;
+    row.classList.toggle('dimmed', !show);
+    if (show) visible++;
+  });
+  document.getElementById('stat-abx').textContent = visible;
+  const filterStat = document.getElementById('filter-stat');
+  const filterStatEl = document.getElementById('stat-filter');
+  if (currentFilter !== 'all' || currentSearch) {
+    filterStat.style.display = 'flex';
+    filterStatEl.textContent = currentSearch ? `"${currentSearch}"` : currentFilter;
+  } else {
+    filterStat.style.display = 'none';
+  }
+}
 
-        function renderList(label, items, color) {
-            if (items.length === 0) return '';
-            const colorMap = {
-                blue: "bg-blue-50 text-blue-600",
-                rose: "bg-rose-50 text-rose-600",
-                emerald: "bg-emerald-50 text-emerald-600"
-            };
-            return `
-                <div>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">${label}</span>
-                    <div class="flex flex-wrap gap-1.5 mt-2">
-                        ${items.map(i => `<span class="px-2.5 py-1 rounded-lg text-[10px] font-semibold ${colorMap[color]}">${i}</span>`).join('')}
-                    </div>
-                </div>
-            `;
-        }
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.filter;
+    applyFilters();
+  });
+});
 
-        function initFilters() {
-            const container = document.getElementById('filterContainer');
-            const classes = ['Tất cả', ...new Set(antibioticData.map(a => a.class))];
-            
-            container.innerHTML = classes.map(c => `
-                <button onclick="setFilter('${c}')" id="btn-${c}" 
-                    class="filter-btn px-5 py-2 rounded-2xl border border-slate-200 bg-white text-slate-600 text-xs font-bold transition-all hover:border-slate-400">
-                    ${c}
-                </button>
-            `).join('');
-            document.getElementById('btn-Tất cả').classList.add('active');
-        }
+document.getElementById('searchInput').addEventListener('input', e => {
+  currentSearch = e.target.value;
+  applyFilters();
+});
 
-        function setFilter(c) {
-            activeFilter = c;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById(`btn-${c}`).classList.add('active');
-            renderApp();
-        }
+// Theme toggle
+(function(){
+  const t = document.querySelector('[data-theme-toggle]');
+  const r = document.documentElement;
+  let d = r.getAttribute('data-theme') || 'dark';
+  const update = () => { t.innerHTML = d === 'dark' ? '☀️' : '🌙'; t.title = d === 'dark' ? 'Chuyển light mode' : 'Chuyển dark mode'; };
+  update();
+  t.addEventListener('click', () => { d = d === 'dark' ? 'light' : 'dark'; r.setAttribute('data-theme', d); update(); });
+})();
 
-        initFilters();
-        renderApp();
-    </script>
+buildRows(antibiotics);
+</script>
 </body>
 </html>

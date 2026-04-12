@@ -212,12 +212,13 @@
 
         async function saveToCloud() {
             if(!db) return alert("Chưa kết nối Cloud!");
-            const name = document.getElementById('name').value;
-            if(!name) return alert("Tên bệnh nhân không được để trống!");
+            const rawName = document.getElementById('name').value;
+            if(!rawName.trim()) return alert("Tên bệnh nhân không được để trống!");
+            const name = rawName.toUpperCase();
 
             const payload = {
                 room: document.getElementById('room').value,
-                name: name,
+                name: name, // Sử dụng biến name đã in hoa
                 dx: document.getElementById('dx').value,
                 content: document.getElementById('content').value,
                 priority: document.getElementById('priority').value,

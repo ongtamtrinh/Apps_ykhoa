@@ -132,6 +132,8 @@
         let currentPriority = 'low';
         let currentTodos = [];
         let currentEditingId = null;
+        let currentEditingId = null;
+        let currentViewingId = null; // Thêm dòng này để dành riêng cho Modal
 
         function toggleDarkMode() { document.documentElement.classList.toggle('dark'); localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light'; }
         
@@ -286,7 +288,7 @@
 
         function showDetail(id) {
             const p = patients.find(x => x.id === id);
-            currentEditingId = id;
+            currentViewingId = id;
             const colors = { low: 'bg-green-500', med: 'bg-orange-500', high: 'bg-red-500' };
             document.getElementById('modal-header-color').className = `h-2 w-full absolute top-0 left-0 ${colors[p.priority]}`;
             document.getElementById('m-name').textContent = p.name;
@@ -303,13 +305,13 @@
         }
 
         function toggleTodoDone(i) {
-            const p = patients.find(x => x.id === currentEditingId);
+            const p = patients.find(x => x.id === currentViewingId); // Đã sửa
             p.todos[i].done = !p.todos[i].done;
-            saveToLocal(); showDetail(currentEditingId); renderPatients();
+            saveToLocal(); showDetail(currentViewingId); renderPatients(); // Đã sửa
         }
 
         function copyCurrentModal() {
-            const p = patients.find(x => x.id === currentEditingId);
+            const p = patients.find(x => x.id === currentViewingId);
             const emoji = p.priority === 'high' ? '🚨' : p.priority === 'med' ? '⚠️' : '✅';
             let text = `${emoji} [BÀN GIAO SBAR - PHÒNG ${p.room}]\nBN: ${p.name.toUpperCase()}\nΔ: ${p.dx.toUpperCase()}\n----------\n${p.content}\n----------\n📝 VIỆC CẦN LÀM:\n${p.todos.map(t => (t.done ? '✅ ' : '⬜ ') + t.text).join('\n') || '- Trống'}\n----------\n⏰ ${p.time}`;
             navigator.clipboard.writeText(text).then(() => alert("Đã copy nội dung bàn giao!"));
@@ -319,7 +321,12 @@
         function loadData() { patients = JSON.parse(localStorage.getItem(`shift_${document.getElementById('duty-date').value}`) || '[]'); renderPatients(); }
         function closeModal() { document.getElementById('detail-modal').classList.add('hidden'); }
         function filterPriority(p) { renderPatients(p); }
-        function deleteCurrentPatient() { if(confirm("Xóa ca này?")) { patients = patients.filter(x => x.id !== currentEditingId); saveToLocal(); renderPatients(); closeModal(); } }
+        function deleteCurrentPatient() { 
+            if(confirm("Xóa ca này?")) { 
+            patients = patients.filter(x => x.id !== currentViewingId); // Đã sửa
+            saveToLocal(); renderPatients(); closeModal(); 
+            } 
+        }
 
         window.onload = () => {
             const di = document.getElementById('duty-date');

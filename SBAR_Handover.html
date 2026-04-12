@@ -3,18 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SBAR Pro V3.0 - Master</title>
+    <title>SBAR Pro V4.0 - Cloud Edition</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
         tailwind.config = { 
             darkMode: 'class',
             theme: {
                 extend: {
-                    colors: {
-                        darkBg: '#0f172a',
-                        darkCard: '#1e293b'
-                    }
+                    colors: { darkBg: '#0f172a', darkCard: '#1e293b' }
                 }
             }
         }
@@ -23,79 +21,108 @@
         body { font-family: 'Inter', sans-serif; transition: background-color 0.3s; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-        .emergency-pulse { animation: pulse-red 2s infinite; }
-        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); } 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); } }
         .tag-item { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-right: 4px; margin-bottom: 4px; }
+        .emergency-pulse { animation: pulse-red 2s infinite; }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-darkBg dark:text-slate-100 min-h-screen">
 
-    <header class="bg-white dark:bg-darkCard border-b dark:border-slate-700 sticky top-0 z-30 px-4 py-3 flex justify-between items-center shadow-sm">
-        <div class="flex items-center gap-2">
-            <div class="bg-blue-600 p-1.5 rounded-lg text-white font-bold text-xl">SB</div>
-            <h1 class="text-lg font-extrabold tracking-tight">SBAR PRO <span class="text-blue-600 font-normal text-xs">V3.0</span></h1>
+    <div id="config-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4">
+        <div class="bg-white dark:bg-darkCard p-6 rounded-3xl w-full max-w-md shadow-2xl">
+            <h2 class="text-xl font-black mb-4">Kết nối Cloud (Supabase)</h2>
+            <p class="text-xs text-slate-500 mb-4">Nhập thông tin từ Project Settings > API của bạn.</p>
+            <input type="text" id="sb-url" placeholder="Supabase URL" class="w-full border rounded-xl px-4 py-2 mb-3 dark:bg-slate-800 dark:border-slate-700">
+            <input type="password" id="sb-key" placeholder="Anon Key" class="w-full border rounded-xl px-4 py-2 mb-4 dark:bg-slate-800 dark:border-slate-700">
+            <button onclick="saveConfig()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">KẾT NỐI NGAY</button>
         </div>
-        <div class="flex items-center gap-3">
-            <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                <span id="dark-icon">🌙</span>
-            </button>
-            <input type="date" id="duty-date" onchange="loadData()" class="text-sm border rounded-lg px-2 py-1 dark:bg-slate-800 dark:border-slate-600">
+    </div>
+
+    <header class="bg-white/80 dark:bg-darkCard/80 backdrop-blur-md border-b dark:border-slate-700 sticky top-0 z-30 px-4 py-3 shadow-sm">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-600 p-1.5 rounded-lg text-white font-bold text-xl">SB</div>
+                <div>
+                    <h1 class="text-lg font-extrabold tracking-tight leading-none">SBAR PRO <span class="text-blue-600">V4.0</span></h1>
+                    <span id="sync-status" class="text-[9px] font-bold text-slate-400 uppercase">Offline Mode</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="document.getElementById('config-modal').classList.remove('hidden')" class="p-2 opacity-50 hover:opacity-100">⚙️</button>
+                <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-xl">🌙</button>
+                <input type="date" id="duty-date" onchange="loadPatients()" class="text-sm font-bold border rounded-xl px-3 py-2 dark:bg-slate-800 dark:border-slate-700">
+            </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <main class="max-w-7xl mx-auto p-4 space-y-6">
         
-        <div class="lg:col-span-4 space-y-4">
-            <div class="bg-white dark:bg-darkCard p-5 rounded-2xl shadow-sm border dark:border-slate-700 relative">
-                <div id="draft-indicator" class="hidden absolute top-3 right-3 text-[10px] text-orange-500 font-bold italic animate-pulse">Đang có bản nháp...</div>
-                <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Thông tin bệnh nhân</h2>
-                
-                <div class="space-y-3">
-                    <div class="grid grid-cols-3 gap-2">
-                        <input type="text" id="room" placeholder="Phòng" class="border rounded-xl px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-600">
-                        <input type="text" id="name" placeholder="Tên BN" class="col-span-2 border rounded-xl px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-600">
-                    </div>
-                    <input type="text" id="dx" placeholder="Chẩn đoán" class="w-full border rounded-xl px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-600">
-                    
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 ml-1">NỘI DUNG SBAR (Tình trạng, Diễn biến)</label>
-                        <textarea id="content" rows="6" class="w-full border rounded-xl px-3 py-2 text-sm mt-1 dark:bg-slate-800 dark:border-slate-600 custom-scrollbar" placeholder="S: Tình trạng...&#10;B: Tiền sử...&#10;A: Đánh giá...&#10;R: Đề xuất..."></textarea>
-                    </div>
-
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400 ml-1">THẺ GẮN (Gõ & Enter)</label>
-                        <div id="tag-container" class="flex flex-wrap mt-1 mb-2"></div>
-                        <input type="text" id="tag-input" placeholder="Thêm thẻ (vd: Thở máy...)" class="w-full border rounded-xl px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-600">
-                    </div>
-
-                    <div class="flex items-center gap-2 py-2">
-                        <span class="text-xs font-bold text-slate-500">Mức độ:</span>
-                        <select id="priority" class="text-xs border rounded-lg px-2 py-1 dark:bg-slate-800 dark:border-slate-600">
-                            <option value="low">✅ Ổn định</option>
-                            <option value="med">⚠️ Theo dõi</option>
-                            <option value="high">🚨 Cấp cứu</option>
-                        </select>
-                    </div>
-
-                    <div class="flex gap-2 pt-2">
-                        <button onclick="savePatient()" id="btn-save" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-xl transition-all shadow-lg shadow-blue-200 dark:shadow-none">LƯU THÔNG TIN</button>
-                        <button onclick="clearForm()" class="px-4 py-2 border rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 font-bold text-sm">HỦY</button>
-                    </div>
-                </div>
+        <div id="dashboard" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="bg-white dark:bg-darkCard p-4 rounded-2xl border dark:border-slate-700 shadow-sm">
+                <p class="text-[10px] font-bold text-slate-400 uppercase">Tổng bệnh</p>
+                <h3 id="count-total" class="text-2xl font-black">0</h3>
+            </div>
+            <div class="bg-white dark:bg-darkCard p-4 rounded-2xl border-l-4 border-l-emerald-500 shadow-sm border dark:border-slate-700">
+                <p class="text-[10px] font-bold text-emerald-500 uppercase">Ổn định</p>
+                <h3 id="count-low" class="text-2xl font-black">0</h3>
+            </div>
+            <div class="bg-white dark:bg-darkCard p-4 rounded-2xl border-l-4 border-l-amber-500 shadow-sm border dark:border-slate-700">
+                <p class="text-[10px] font-bold text-amber-500 uppercase">Theo dõi</p>
+                <h3 id="count-med" class="text-2xl font-black">0</h3>
+            </div>
+            <div class="bg-white dark:bg-darkCard p-4 rounded-2xl border-l-4 border-l-red-500 shadow-sm border dark:border-slate-700">
+                <p class="text-[10px] font-bold text-red-500 uppercase">Cấp cứu</p>
+                <h3 id="count-high" class="text-2xl font-black">0</h3>
             </div>
         </div>
 
-        <div class="lg:col-span-8">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="font-extrabold text-xl">Danh sách ca bệnh</h2>
-                <div class="flex gap-2">
-                    <button onclick="filterPriority('all')" class="text-[10px] font-bold px-3 py-1 bg-slate-200 dark:bg-slate-700 rounded-full">TẤT CẢ</button>
-                    <button onclick="filterPriority('high')" class="text-[10px] font-bold px-3 py-1 bg-red-100 text-red-600 rounded-full">CẤP CỨU</button>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-4 space-y-4">
+                <div class="bg-white dark:bg-darkCard p-5 rounded-3xl shadow-sm border dark:border-slate-700 sticky top-24">
+                    <div id="draft-indicator" class="hidden text-[10px] text-orange-500 font-bold mb-2 animate-pulse text-right">● Đang có bản nháp chưa lưu</div>
+                    
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-3 gap-2">
+                            <input type="text" id="room" placeholder="Phòng" class="border rounded-xl px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-600">
+                            <input type="text" id="name" placeholder="Tên bệnh nhân" class="col-span-2 border rounded-xl px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-600 font-bold">
+                        </div>
+                        <input type="text" id="dx" placeholder="Chẩn đoán" class="w-full border rounded-xl px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-600">
+                        
+                        <textarea id="content" rows="6" class="w-full border rounded-xl px-3 py-2 text-sm dark:bg-slate-800 dark:border-slate-600 custom-scrollbar" placeholder="Nội dung SBAR..."></textarea>
+
+                        <div>
+                            <div id="tag-container" class="flex flex-wrap mb-2"></div>
+                            <input type="text" id="tag-input" placeholder="Gõ thẻ & Enter (vd: Nhịn ăn)" class="w-full border rounded-xl px-3 py-2 text-xs dark:bg-slate-800 dark:border-slate-600">
+                        </div>
+
+                        <div class="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800 rounded-xl">
+                            <span class="text-xs font-bold text-slate-500">Mức độ ưu tiên:</span>
+                            <select id="priority" class="text-xs font-bold border rounded-lg px-2 py-1 dark:bg-slate-700 dark:border-slate-600">
+                                <option value="low">✅ ỔN ĐỊNH</option>
+                                <option value="med">⚠️ THEO DÕI</option>
+                                <option value="high">🚨 CẤP CỨU</option>
+                            </select>
+                        </div>
+
+                        <div class="flex gap-2 pt-2">
+                            <button onclick="saveToCloud()" id="btn-save" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-200 dark:shadow-none transition-all">LƯU LÊN CLOUD</button>
+                            <button onclick="clearForm()" class="px-4 py-3 border rounded-xl font-bold text-sm">HỦY</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-            
-            <div id="patient-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div class="lg:col-span-8 space-y-4">
+                <div class="flex justify-between items-center">
+                    <h2 class="font-black text-xl flex items-center gap-2">
+                        Ca trực ngày <span id="display-date" class="text-blue-600">--/--</span>
+                    </h2>
+                    <button onclick="loadPatients()" class="p-2 bg-white dark:bg-darkCard rounded-xl border dark:border-slate-700 text-sm">🔄 Làm mới</button>
                 </div>
+                
+                <div id="patient-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    </div>
+            </div>
         </div>
     </main>
 
@@ -104,171 +131,196 @@
             <div id="modal-header" class="p-5 text-white flex justify-between items-start">
                 <div>
                     <h3 id="m-name" class="text-xl font-black">N/A</h3>
-                    <p id="m-room" class="text-sm opacity-80 font-bold"></p>
+                    <p id="m-room" class="text-xs opacity-90 font-bold uppercase"></p>
                 </div>
                 <button onclick="closeModal()" class="text-2xl font-bold">&times;</button>
             </div>
             <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-4">
                 <div id="m-tags" class="flex flex-wrap"></div>
-                <div>
-                    <h4 class="text-[10px] font-bold text-slate-400 uppercase mb-1">Nội dung SBAR</h4>
-                    <p id="m-content" class="text-sm whitespace-pre-wrap leading-relaxed text-slate-700 dark:text-slate-300"></p>
-                </div>
+                <p id="m-content" class="text-sm whitespace-pre-wrap leading-relaxed dark:text-slate-300"></p>
                 <div class="border-t dark:border-slate-700 pt-4">
-                    <h4 class="text-[10px] font-bold text-slate-400 uppercase mb-2">Checklist / Y lệnh</h4>
-                    <div id="m-todo-list" class="space-y-2"></div>
-                    <div class="flex mt-3 gap-2">
-                        <input type="text" id="new-todo" placeholder="Thêm việc..." class="flex-1 text-sm border rounded-lg px-3 py-1 dark:bg-slate-800 dark:border-slate-600">
-                        <button onclick="addTodo()" class="bg-slate-800 dark:bg-slate-100 dark:text-darkBg text-white px-3 py-1 rounded-lg font-bold text-sm">+</button>
+                    <h4 class="text-[10px] font-bold text-slate-400 uppercase mb-3">Checklist công việc</h4>
+                    <div id="m-todo-list" class="space-y-2 mb-3"></div>
+                    <div class="flex gap-2">
+                        <input type="text" id="new-todo" placeholder="Việc cần làm tiếp theo..." class="flex-1 text-sm border rounded-xl px-3 py-2 dark:bg-slate-800 dark:border-slate-600">
+                        <button onclick="addTodo()" class="bg-slate-900 dark:bg-slate-100 dark:text-darkBg text-white px-4 py-2 rounded-xl font-bold">+</button>
                     </div>
                 </div>
             </div>
-            <div class="p-4 bg-slate-50 dark:bg-slate-800 flex justify-between gap-2">
-                <button onclick="copyCurrentModal()" class="flex-1 py-2 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100 rounded-xl font-bold text-sm">COPY SBAR</button>
-                <button onclick="deleteCurrentPatient()" class="px-4 py-2 text-red-500 font-bold text-sm">XÓA</button>
+            <div class="p-4 bg-slate-50 dark:bg-slate-800 flex gap-2">
+                <button onclick="copySBAR()" class="flex-1 py-3 bg-blue-600 text-white rounded-2xl font-bold text-sm">COPY BÀN GIAO</button>
+                <button onclick="deleteFromCloud()" class="px-4 text-red-500 font-bold text-xs uppercase">Xóa ca</button>
             </div>
         </div>
     </div>
 
     <script>
+        let supabase = null;
         let patients = [];
-        let currentEditingId = null; // Dành riêng cho Edit Form
-        let currentViewingId = null; // Dành riêng cho Modal Detail
+        let currentEditingId = null; 
+        let currentViewingId = null; 
         let currentTags = [];
 
-        // --- DARK MODE LOGIC ---
-        function toggleDarkMode() {
-            document.documentElement.classList.toggle('dark');
-            const isDark = document.documentElement.classList.contains('dark');
-            localStorage.setItem('sbar_theme', isDark ? 'dark' : 'light');
-            document.getElementById('dark-icon').innerText = isDark ? '☀️' : '🌙';
+        // --- SUPABASE SETUP ---
+        function saveConfig() {
+            const url = document.getElementById('sb-url').value;
+            const key = document.getElementById('sb-key').value;
+            if(!url || !key) return alert("Vui lòng nhập đủ URL và Key!");
+            localStorage.setItem('sb_url', url);
+            localStorage.setItem('sb_key', key);
+            location.reload();
         }
 
-        // --- TAGS LOGIC ---
-        const tagInput = document.getElementById('tag-input');
-        tagInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && tagInput.value.trim()) {
-                addTag(tagInput.value.trim());
-                tagInput.value = '';
+        function initSupabase() {
+            const url = localStorage.getItem('sb_url');
+            const key = localStorage.getItem('sb_key');
+            if(url && key) {
+                supabase = supabase.createClient(url, key);
+                document.getElementById('sync-status').innerText = "☁️ Cloud Connected";
+                document.getElementById('sync-status').className = "text-[9px] font-bold text-emerald-500 uppercase";
+                return true;
             }
-        });
-
-        function addTag(text) {
-            if (!currentTags.includes(text)) {
-                currentTags.push(text);
-                renderFormTags();
-                saveDraft(); // Lưu nháp khi thêm thẻ
-            }
+            document.getElementById('config-modal').classList.remove('hidden');
+            return false;
         }
 
-        function removeTag(text) {
-            currentTags = currentTags.filter(t => t !== text);
-            renderFormTags();
-            saveDraft();
+        // --- CORE ACTIONS ---
+        async function loadPatients() {
+            if(!supabase) return;
+            const date = document.getElementById('duty-date').value;
+            document.getElementById('display-date').innerText = date.split('-').reverse().slice(0,2).join('/');
+            
+            const { data, error } = await supabase
+                .from('patients')
+                .select('*')
+                .eq('duty_date', date)
+                .order('created_at', { ascending: false });
+
+            if(error) return console.error(error);
+            patients = data;
+            renderPatients();
+            updateDashboard();
         }
 
-        function renderFormTags() {
-            const container = document.getElementById('tag-container');
-            container.innerHTML = currentTags.map(t => `
-                <span class="tag-item bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100">
-                    ${t} <button onclick="removeTag('${t}')" class="ml-1 text-xs font-black">×</button>
-                </span>
-            `).join('');
-        }
+        async function saveToCloud() {
+            if(!supabase) return alert("Chưa kết nối Cloud!");
+            const name = document.getElementById('name').value;
+            if(!name) return alert("Tên bệnh nhân không được để trống!");
 
-        // --- AUTO-SAVE DRAFT LOGIC ---
-        const formFields = ['room', 'name', 'dx', 'content', 'priority'];
-        formFields.forEach(id => {
-            document.getElementById(id).addEventListener('input', saveDraft);
-        });
-
-        function saveDraft() {
-            if (currentEditingId) return; // Không lưu nháp khi đang ở chế độ Edit bệnh nhân cũ
-            const draft = {
+            const payload = {
                 room: document.getElementById('room').value,
-                name: document.getElementById('name').value,
-                dx: document.getElementById('dx').value,
-                content: document.getElementById('content').value,
-                priority: document.getElementById('priority').value,
-                tags: currentTags
-            };
-            localStorage.setItem('sbar_draft', JSON.stringify(draft));
-            document.getElementById('draft-indicator').classList.remove('hidden');
-        }
-
-        function loadDraft() {
-            const draft = JSON.parse(localStorage.getItem('sbar_draft'));
-            if (draft && !currentEditingId) {
-                document.getElementById('room').value = draft.room || '';
-                document.getElementById('name').value = draft.name || '';
-                document.getElementById('dx').value = draft.dx || '';
-                document.getElementById('content').value = draft.content || '';
-                document.getElementById('priority').value = draft.priority || 'low';
-                currentTags = draft.tags || [];
-                renderFormTags();
-                document.getElementById('draft-indicator').classList.remove('hidden');
-            }
-        }
-
-        // --- CORE FUNCTIONS ---
-        function savePatient() {
-            const p = {
-                id: currentEditingId || Date.now(),
-                room: document.getElementById('room').value,
-                name: document.getElementById('name').value,
+                name: name,
                 dx: document.getElementById('dx').value,
                 content: document.getElementById('content').value,
                 priority: document.getElementById('priority').value,
                 tags: currentTags,
-                todos: currentEditingId ? patients.find(x => x.id === currentEditingId).todos : [],
-                time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})
+                duty_date: document.getElementById('duty-date').value,
+                todos: currentEditingId ? patients.find(x => x.id === currentEditingId).todos : []
             };
 
-            if(!p.name) return alert("Vui lòng nhập tên bệnh nhân!");
-
+            let res;
             if(currentEditingId) {
-                patients = patients.map(x => x.id === currentEditingId ? p : x);
+                res = await supabase.from('patients').update(payload).eq('id', currentEditingId);
             } else {
-                patients.unshift(p);
+                res = await supabase.from('patients').insert([payload]);
             }
 
-            saveToLocal();
-            clearForm();
-            renderPatients();
-            localStorage.removeItem('sbar_draft'); // Xóa nháp sau khi lưu thật
-            document.getElementById('draft-indicator').classList.add('hidden');
+            if(res.error) alert("Lỗi khi lưu: " + res.error.message);
+            else {
+                clearForm();
+                loadPatients();
+                localStorage.removeItem('sbar_draft');
+            }
         }
 
-        function renderPatients(filter = 'all') {
+        async function deleteFromCloud() {
+            if(!confirm("Xác nhận xóa vĩnh viễn ca này trên Cloud?")) return;
+            const { error } = await supabase.from('patients').delete().eq('id', currentViewingId);
+            if(error) alert(error.message);
+            else {
+                closeModal();
+                loadPatients();
+            }
+        }
+
+        // --- UI RENDERING ---
+        function renderPatients() {
             const list = document.getElementById('patient-list');
             list.innerHTML = '';
             
-            patients.filter(p => filter === 'all' || p.priority === filter).forEach(p => {
-                const color = p.priority === 'high' ? 'border-l-red-500' : p.priority === 'med' ? 'border-l-amber-500' : 'border-l-emerald-500';
+            patients.forEach(p => {
+                const colorClass = p.priority === 'high' ? 'border-l-red-500' : p.priority === 'med' ? 'border-l-amber-500' : 'border-l-emerald-500';
                 const pulse = p.priority === 'high' ? 'emergency-pulse' : '';
-                
-                const tagsHtml = p.tags ? p.tags.map(t => `<span class="tag-item bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">${t}</span>`).join('') : '';
+                const tagsHtml = (p.tags || []).map(t => `<span class="tag-item bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400">${t}</span>`).join('');
 
                 const div = document.createElement('div');
-                div.className = `bg-white dark:bg-darkCard p-4 rounded-2xl shadow-sm border-l-4 ${color} ${pulse} cursor-pointer hover:scale-[1.02] transition-all border dark:border-slate-700`;
+                div.className = `bg-white dark:bg-darkCard p-4 rounded-3xl border dark:border-slate-700 border-l-4 ${colorClass} ${pulse} cursor-pointer hover:shadow-md transition-all`;
                 div.onclick = () => showDetail(p.id);
                 div.innerHTML = `
-                    <div class="flex justify-between items-start mb-1">
-                        <span class="text-[10px] font-black px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-slate-500">P. ${p.room}</span>
-                        <span class="text-[10px] text-slate-400 font-bold">${p.time}</span>
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-[10px] font-black px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded uppercase">P. ${p.room || '??'}</span>
+                        <div class="flex gap-1">${p.todos.filter(t => t.done).map(() => '<div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>').join('')}</div>
                     </div>
-                    <h3 class="font-black text-lg uppercase truncate">${p.name}</h3>
-                    <p class="text-xs text-blue-600 dark:text-blue-400 font-bold mb-2 truncate">${p.dx.toUpperCase()}</p>
-                    <div class="flex flex-wrap mb-2">${tagsHtml}</div>
-                    <div class="flex justify-between items-center mt-3">
-                        <div class="flex -space-x-1">
-                            ${p.todos.slice(0,3).map(t => `<div class="w-2 h-2 rounded-full ${t.done ? 'bg-emerald-400' : 'bg-slate-300'} border border-white"></div>`).join('')}
-                        </div>
-                        <button onclick="event.stopPropagation(); startEdit(${p.id})" class="text-[10px] font-bold text-slate-400 hover:text-blue-600">CHỈNH SỬA</button>
+                    <h3 class="font-black text-lg truncate">${p.name.toUpperCase()}</h3>
+                    <p class="text-xs text-blue-600 font-bold truncate mb-3">${p.dx.toUpperCase() || 'CHƯA CÓ CHẨN ĐOÁN'}</p>
+                    <div class="flex flex-wrap">${tagsHtml}</div>
+                    <div class="mt-3 pt-3 border-t dark:border-slate-800 flex justify-end">
+                        <button onclick="event.stopPropagation(); startEdit('${p.id}')" class="text-[10px] font-bold text-slate-400 hover:text-blue-600">CHỈNH SỬA</button>
                     </div>
                 `;
                 list.appendChild(div);
             });
+        }
+
+        function updateDashboard() {
+            document.getElementById('count-total').innerText = patients.length;
+            document.getElementById('count-low').innerText = patients.filter(p => p.priority === 'low').length;
+            document.getElementById('count-med').innerText = patients.filter(p => p.priority === 'med').length;
+            document.getElementById('count-high').innerText = patients.filter(p => p.priority === 'high').length;
+        }
+
+        // --- HELPER FUNCTIONS ---
+        function showDetail(id) {
+            const p = patients.find(x => x.id === id);
+            currentViewingId = id;
+            const modal = document.getElementById('detail-modal');
+            const header = document.getElementById('modal-header');
+            
+            const color = p.priority === 'high' ? 'bg-red-500' : p.priority === 'med' ? 'bg-amber-500' : 'bg-emerald-500';
+            header.className = `p-5 text-white flex justify-between items-start ${color}`;
+            document.getElementById('m-name').innerText = p.name.toUpperCase();
+            document.getElementById('m-room').innerText = `Phòng: ${p.room || '--'} | ${p.dx || 'Chưa rõ'}`;
+            document.getElementById('m-content').innerText = p.content;
+            document.getElementById('m-tags').innerHTML = (p.tags || []).map(t => `<span class="tag-item bg-white/20 text-white border border-white/20">${t}</span>`).join('');
+            
+            renderTodos();
+            modal.classList.remove('hidden');
+        }
+
+        function renderTodos() {
+            const p = patients.find(x => x.id === currentViewingId);
+            document.getElementById('m-todo-list').innerHTML = (p.todos || []).map((t, i) => `
+                <div class="flex items-center gap-3 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border dark:border-slate-700">
+                    <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodo(${i})" class="w-5 h-5 rounded-full border-2">
+                    <span class="text-sm ${t.done ? 'line-through text-slate-400' : 'font-bold'}">${t.text}</span>
+                </div>
+            `).join('');
+        }
+
+        async function toggleTodo(i) {
+            const p = patients.find(x => x.id === currentViewingId);
+            p.todos[i].done = !p.todos[i].done;
+            await supabase.from('patients').update({ todos: p.todos }).eq('id', currentViewingId);
+            renderTodos(); renderPatients();
+        }
+
+        async function addTodo() {
+            const input = document.getElementById('new-todo');
+            if(!input.value) return;
+            const p = patients.find(x => x.id === currentViewingId);
+            p.todos.push({ text: input.value, done: false });
+            await supabase.from('patients').update({ todos: p.todos }).eq('id', currentViewingId);
+            input.value = ''; renderTodos(); renderPatients();
         }
 
         function startEdit(id) {
@@ -281,101 +333,53 @@
             document.getElementById('priority').value = p.priority;
             currentTags = [...(p.tags || [])];
             renderFormTags();
-            document.getElementById('btn-save').innerText = "CẬP NHẬT THÔNG TIN";
-            document.getElementById('draft-indicator').classList.add('hidden');
+            document.getElementById('btn-save').innerText = "CẬP NHẬT TRÊN CLOUD";
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function clearForm() {
-            currentEditingId = null;
-            currentTags = [];
-            formFields.forEach(id => document.getElementById(id).value = '');
+            currentEditingId = null; currentTags = [];
+            ['room', 'name', 'dx', 'content'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('priority').value = 'low';
             renderFormTags();
-            document.getElementById('btn-save').innerText = "LƯU THÔNG TIN";
-            localStorage.removeItem('sbar_draft');
-            document.getElementById('draft-indicator').classList.add('hidden');
+            document.getElementById('btn-save').innerText = "LƯU LÊN CLOUD";
         }
 
-        function showDetail(id) {
-            const p = patients.find(x => x.id === id);
-            currentViewingId = id;
-            const modal = document.getElementById('detail-modal');
-            const header = document.getElementById('modal-header');
-            
-            header.className = `p-5 text-white flex justify-between items-start ${p.priority === 'high' ? 'bg-red-500' : p.priority === 'med' ? 'bg-amber-500' : 'bg-emerald-500'}`;
-            document.getElementById('m-name').innerText = p.name.toUpperCase();
-            document.getElementById('m-room').innerText = `PHÒNG: ${p.room} | ${p.dx.toUpperCase()}`;
-            document.getElementById('m-content').innerText = p.content;
-            document.getElementById('m-tags').innerHTML = (p.tags || []).map(t => `<span class="tag-item bg-white/20 text-white border border-white/30">${t}</span>`).join('');
-            
-            renderTodos();
-            modal.classList.remove('hidden');
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            localStorage.setItem('sbar_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
         }
 
-        function renderTodos() {
-            const p = patients.find(x => x.id === currentViewingId);
-            const list = document.getElementById('m-todo-list');
-            list.innerHTML = p.todos.map((t, i) => `
-                <div class="flex items-center gap-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-800 border dark:border-slate-700">
-                    <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggleTodoDone(${i})" class="w-4 h-4 rounded">
-                    <span class="text-sm ${t.done ? 'line-through text-slate-400' : 'font-semibold'}">${t.text}</span>
-                </div>
+        // Tag Logic
+        document.getElementById('tag-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && e.target.value.trim()) {
+                const val = e.target.value.trim();
+                if(!currentTags.includes(val)) currentTags.push(val);
+                e.target.value = ''; renderFormTags();
+            }
+        });
+        function renderFormTags() {
+            document.getElementById('tag-container').innerHTML = currentTags.map(t => `
+                <span class="tag-item bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                    ${t} <button onclick="currentTags=currentTags.filter(x=>x!=='${t}');renderFormTags()" class="ml-1 font-black">×</button>
+                </span>
             `).join('');
         }
 
-        function addTodo() {
-            const input = document.getElementById('new-todo');
-            if(!input.value) return;
-            const p = patients.find(x => x.id === currentViewingId);
-            p.todos.push({ text: input.value, done: false });
-            input.value = '';
-            saveToLocal(); renderTodos(); renderPatients();
-        }
+        function closeModal() { document.getElementById('detail-modal').classList.add('hidden'); currentViewingId = null; }
 
-        function toggleTodoDone(i) {
+        function copySBAR() {
             const p = patients.find(x => x.id === currentViewingId);
-            p.todos[i].done = !p.todos[i].done;
-            saveToLocal(); renderTodos(); renderPatients();
-        }
-
-        function copyCurrentModal() {
-            const p = patients.find(x => x.id === currentViewingId);
-            const emoji = p.priority === 'high' ? '🚨' : p.priority === 'med' ? '⚠️' : '✅';
-            const tagsTxt = (p.tags || []).length > 0 ? `[${p.tags.join(', ')}]` : '';
-            let text = `${emoji} [SBAR - PHÒNG ${p.room}] ${tagsTxt}\nBN: ${p.name.toUpperCase()}\nΔ: ${p.dx.toUpperCase()}\n----------\n${p.content}\n----------\n📝 VIỆC CẦN LÀM:\n${p.todos.map(t => (t.done ? '✅ ' : '⬜ ') + t.text).join('\n') || '- Trống'}\n----------\n⏰ ${p.time}`;
+            const status = p.priority === 'high' ? '🚨 CẤP CỨU' : p.priority === 'med' ? '⚠️ THEO DÕI' : '✅ ỔN ĐỊNH';
+            const text = `${status}\n[PHÒNG ${p.room}] ${p.name.toUpperCase()}\nChẩn đoán: ${p.dx}\n---\n${p.content}\n---\nViệc cần làm:\n${p.todos.map(t => (t.done ? '[x] ' : '[ ] ') + t.text).join('\n') || '- Không có'}`;
             navigator.clipboard.writeText(text).then(() => alert("Đã copy nội dung bàn giao!"));
         }
 
-        function saveToLocal() { localStorage.setItem(`shift_${document.getElementById('duty-date').value}`, JSON.stringify(patients)); }
-        
-        function loadData() { 
-            patients = JSON.parse(localStorage.getItem(`shift_${document.getElementById('duty-date').value}`) || '[]'); 
-            renderPatients(); 
-        }
-
-        function closeModal() { document.getElementById('detail-modal').classList.add('hidden'); currentViewingId = null; }
-        
-        function filterPriority(p) { renderPatients(p); }
-
-        function deleteCurrentPatient() { 
-            if(confirm("Xóa ca này?")) { 
-                patients = patients.filter(x => x.id !== currentViewingId); 
-                saveToLocal(); renderPatients(); closeModal(); 
-            } 
-        }
-
         window.onload = () => {
-            // Load theme
-            const savedTheme = localStorage.getItem('sbar_theme');
-            if (savedTheme === 'dark') {
-                document.documentElement.classList.add('dark');
-                document.getElementById('dark-icon').innerText = '☀️';
-            }
-
-            const di = document.getElementById('duty-date');
-            if(!di.value) di.value = new Date().toISOString().split('T')[0];
-            loadData();
-            loadDraft(); // Load bản nháp nếu có
+            if(localStorage.getItem('sbar_theme') === 'dark') document.documentElement.classList.add('dark');
+            const d = document.getElementById('duty-date');
+            if(!d.value) d.value = new Date().toISOString().split('T')[0];
+            if(initSupabase()) loadPatients();
         }
     </script>
 </body>

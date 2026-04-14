@@ -279,29 +279,24 @@
             const interpretationTemplate = '[\n  {"score": "0-1", "action": "Xử trí A", "level": "low"},\n  {"score": "≥ 2", "action": "Xử trí B", "level": "high"}\n]';
 
             onMounted(async () => {
-            // 1. Kiểm tra chế độ Dark Mode
-            if (localStorage.theme === 'dark') {
-                isDarkMode.value = true;
-                document.documentElement.classList.add('dark');
-            }
+            // Tự động lấy đường dẫn tương đối so với file HTML hiện tại
+            const dataUrl = 'data/MedScale_Library.json'; 
 
-            // 2. Tải dữ liệu từ file JSON bên ngoài
-            // Giả sử bạn có file chính là 'data/MedScale_Library.json'
             try {
-                const response = await fetch('data/MedScale_Library.json');
-                if (!response.ok) throw new Error("Không tìm thấy file dữ liệu");
+                // Thêm tham số để tránh trình duyệt lấy file cũ đã lưu trong cache
+                const response = await fetch(dataUrl + '?v=' + Date.now()); 
+                
+                if (!response.ok) throw new Error("404 - Không tìm thấy file JSON");
                 
                 const remoteData = await response.json();
                 clinicalScales.value = remoteData;
-                console.log("Đã tải dữ liệu từ file JSON thành công");
+                console.log("Đã tải dữ liệu từ GitHub thành công!");
             } catch (error) {
-                console.warn("Không thể tải file JSON, chuyển sang dùng LocalStorage:", error);
-                // Fallback: Nếu không có file JSON, dùng dữ liệu đã lưu trong trình duyệt
+                console.error("Lỗi Fetch:", error);
+                // Fallback: Nếu lỗi fetch thì lấy từ LocalStorage (dữ liệu bạn tự nhập tay)
                 const saved = localStorage.getItem('medscale_v3');
                 if (saved) clinicalScales.value = JSON.parse(saved);
             }
-            
-            resetForm();
         });
 
             watch(clinicalScales, (val) => {

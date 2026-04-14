@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MedScale Pro - Hệ thống Quản lý Thang điểm</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { fontFamily: { sans: ['Inter', 'sans-serif'] } } }
+        }
+    </script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { @apply bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200 transition-colors duration-200; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        [v-cloak] { display: none; }
+    </style>
+</head>
+<body>
+
+<div id="app" v-cloak class="min-h-screen flex flex-col">
+    <nav class="bg-white dark:bg-slate-800 shadow-sm sticky top-0 z-50 border-b border-slate-200 dark:border-slate-700">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div @click="goToHome" class="flex items-center gap-2 cursor-pointer">
+                <div class="w-9 h-9 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black shadow-lg">M</div>
+                <h1 class="text-xl font-black tracking-tighter hidden sm:block">MedScale<span class="text-blue-600">.</span></h1>
+            </div>
+            
+            <div v-if="currentView === 'home'" class="relative flex-1 max-w-xs mx-4">
+                <input v-model="searchQuery" type="text" placeholder="Tìm nhanh..." class="w-full pl-9 pr-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-xl outline-none text-sm font-medium focus:ring-2 focus:ring-blue-500 transition-all">
+                <span class="absolute left-3 top-2.5 opacity-40">🔍</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button @click="toggleDarkMode" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    {{ isDarkMode ? '☀️' : '🌙' }}
+                </button>
+                <button v-if="currentView !== 'manage'" @click="goToManage" class="px-3 py-2 bg-slate-900 dark:bg-blue-600 text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all">
+                    ⚙️ Quản lý
+                </button>
+                <button v-if="currentView !== 'home'" @click="goToHome" class="px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-xl text-xs font-bold transition-all">
+                    ← Quay lại
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main v-if="currentView === 'home'" class="flex-1 max-w-5xl mx-auto w-full px-4 py-6">
+        <div class="flex flex-wrap gap-2 mb-8 overflow-x-auto pb-2 no-scrollbar">
+            <button @click="selectedCategory = 'Tất cả'" :class="selectedCategory === 'Tất cả' ? 'bg-blue-600 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'" class="px-4 py-2 rounded-xl text-xs font-bold border transition-all">Tất cả</button>
+            <button v-for="cat in categories" @click="selectedCategory = cat" :class="selectedCategory === cat ? 'bg-blue-600 text-white' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700'" class="px-4 py-2 rounded-xl text-xs font-bold border transition-all">{{ cat }}</button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div v-for="scale in filteredScales" :key="scale.id" @click="openDetail(scale)" class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 cursor-pointer hover:-translate-y-1 hover:border-blue-500 transition-all shadow-sm">
+                <span class="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-1 rounded-md mb-3 inline-block">{{ scale.category }}</span>
+                <h2 class="text-base font-extrabold text-slate-800 dark:text-slate-100">{{ scale.name }}</h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-2">{{ scale.description }}</p>
+            </div>
+        </div>
+    </main>
+
+    <main v-if="currentView === 'detail'" class="flex-1 max-w-4xl mx-auto w-full px-4 py-6">
+        <div id="export-area" class="bg-white dark:bg-slate-800 rounded-3xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div class="p-6 sm:p-8 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700 flex justify-between items-start">
+                <div>
+                    <span class="text-[10px] font-black uppercase text-blue-600 dark:text-blue-400 px-2 py-1 bg-blue-100/50 dark:bg-blue-900/30 rounded-md">{{ selectedScale.category }}</span>
+                    <h2 class="text-2xl sm:text-3xl font-black text-slate-800 dark:text-white mt-2">{{ selectedScale.name }}</h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1 font-medium">{{ selectedScale.description }}</p>
+                </div>
+                <button @click="downloadImage" class="px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-xl text-xs font-bold shadow-sm">📸 Tải ảnh</button>
+            </div>
+
+            <div class="p-6 sm:p-8 space-y-8">
+                <div v-if="selectedScale.detail">
+                    <h4 class="text-[11px] font-black text-slate-400 mb-3 uppercase tracking-widest">Hướng dẫn lý thuyết</h4>
+                    <div class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-900/50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700 whitespace-pre-line">{{ selectedScale.detail }}</div>
+                </div>
+
+                <div>
+                    <h4 class="text-[11px] font-black text-slate-400 mb-3 uppercase tracking-widest">Tiêu chuẩn đánh giá</h4>
+                    <div class="overflow-hidden border border-slate-200 dark:border-slate-700 rounded-2xl">
+                        
+                        <table v-if="selectedScale.tableLayout === 'checklist'" class="w-full text-sm text-left">
+                            <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 font-bold text-xs uppercase">
+                                <tr><th class="px-5 py-3 border-b dark:border-slate-700">Tiêu chí</th><th class="px-5 py-3 border-b dark:border-slate-700 text-center w-24">Điểm</th></tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+                                <tr v-for="item in selectedScale.tableData" class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                                    <td class="px-5 py-4 font-medium">{{ item.label }}</td>
+                                    <td class="px-5 py-4 font-black text-blue-600 dark:text-blue-400 text-center">+{{ item.value }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div v-if="selectedScale.tableLayout === 'grouped'" class="w-full text-sm">
+                            <div v-for="group in selectedScale.tableData">
+                                <div class="bg-slate-100 dark:bg-slate-900 px-5 py-2.5 font-black text-slate-800 dark:text-slate-300 border-y dark:border-slate-700 sticky top-0">{{ group.groupName }}</div>
+                                <table class="w-full divide-y dark:divide-slate-700"><tbody class="divide-y dark:divide-slate-700">
+                                    <tr v-for="item in group.items" class="hover:bg-slate-50 dark:hover:bg-slate-700/30">
+                                        <td class="px-5 py-3 font-medium">{{ item.label }}</td>
+                                        <td class="px-5 py-3 font-bold text-right w-24">{{ item.value }}</td>
+                                    </tr>
+                                </tbody></table>
+                            </div>
+                        </div>
+
+                        <div v-if="selectedScale.tableLayout === 'matrix'" class="w-full overflow-x-auto no-scrollbar">
+                            <table class="w-full text-sm min-w-[500px]">
+                                <thead class="bg-slate-50 dark:bg-slate-900 text-slate-500 font-bold text-xs uppercase">
+                                    <tr>
+                                        <th v-for="(h, i) in selectedScale.tableData.headers" :class="i === 0 ? 'sticky left-0 bg-slate-50 dark:bg-slate-900 z-10' : ''" class="px-5 py-3 border-b dark:border-slate-700 text-center">{{ h }}</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y dark:divide-slate-700">
+                                    <tr v-for="row in selectedScale.tableData.rows">
+                                        <td class="px-5 py-4 font-bold bg-white dark:bg-slate-800 sticky left-0 shadow-sm">{{ row.label }}</td>
+                                        <td v-for="val in row.values" class="px-5 py-4 text-center">
+                                            <span class="bg-slate-50 dark:bg-slate-700/50 px-3 py-1.5 rounded-lg text-xs">{{ val }}</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-[11px] font-black text-slate-400 mb-3 uppercase tracking-widest">Phân tầng & Xử trí</h4>
+                    <div class="grid grid-cols-1 gap-3">
+                        <div v-for="res in selectedScale.interpretation" class="flex flex-col sm:flex-row sm:items-center p-4 border border-slate-100 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800">
+                            <div class="sm:w-32 flex-shrink-0 mb-2 sm:mb-0"><span :class="getRiskClass(res.level)" class="px-3 py-1 rounded-lg font-black text-xs border uppercase">{{ res.score }}</span></div>
+                            <div class="text-sm font-semibold">{{ res.action }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <main v-if="currentView === 'manage'" class="flex-1 max-w-5xl mx-auto w-full px-4 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <div class="lg:col-span-5 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-black">Thư viện ({{ clinicalScales.length }})</h2>
+                    <div class="flex gap-2">
+                        <button @click="triggerImport" class="text-[10px] font-bold px-2 py-1 bg-emerald-100 text-emerald-700 rounded-lg">Import</button>
+                        <button @click="exportData" class="text-[10px] font-bold px-2 py-1 bg-blue-100 text-blue-700 rounded-lg">Export</button>
+                        <input type="file" id="fileIn" class="hidden" @change="importData" accept=".json">
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm">
+                    <ul class="divide-y dark:divide-slate-700 max-h-[70vh] overflow-y-auto no-scrollbar">
+                        <li v-for="(scale, idx) in clinicalScales" class="p-4 flex items-center justify-between group">
+                            <div class="flex-1 min-w-0 pr-4">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">{{ scale.category }}</span>
+                                <h4 class="font-bold text-sm truncate">{{ scale.name }}</h4>
+                            </div>
+                            <div class="flex gap-1">
+                                <button @click="editScale(idx)" class="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 rounded-lg transition-all" title="Sửa">✏️</button>
+                                <button @click="deleteScale(idx)" class="p-2 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-500 rounded-lg transition-all" title="Xóa">🗑️</button>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7 bg-white dark:bg-slate-800 border dark:border-slate-700 rounded-3xl p-6 shadow-sm sticky top-24 h-fit">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-black">{{ isEditing ? '✏️ Cập nhật' : '➕ Thêm thang điểm' }}</h2>
+                    <button v-if="isEditing" @click="resetForm" class="text-xs font-bold text-red-500 underline">Hủy sửa</button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Tên hiển thị</label>
+                            <input v-model="form.name" type="text" class="w-full p-3 bg-slate-50 dark:bg-slate-900 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Chuyên khoa</label>
+                            <input v-model="form.category" type="text" placeholder="VD: Gan mật" class="w-full p-3 bg-slate-50 dark:bg-slate-900 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-sm">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Kiểu hiển thị (Layout)</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button v-for="l in layouts" @click="form.tableLayout = l.id" :class="form.tableLayout === l.id ? 'bg-blue-600 text-white' : 'bg-slate-50 dark:bg-slate-900'" class="p-2 rounded-xl text-[10px] font-bold transition-all border dark:border-slate-700">{{ l.name }}</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-slate-400 mb-1">Mô tả & Lý thuyết</label>
+                        <textarea v-model="form.detail" rows="2" class="w-full p-3 bg-slate-50 dark:bg-slate-900 rounded-xl outline-none text-sm"></textarea>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-end mb-1">
+                            <label class="text-[10px] font-black uppercase text-slate-400">Dữ liệu Bảng (JSON)</label>
+                            <button @click="loadTemplate" class="text-[9px] bg-slate-900 dark:bg-blue-600 text-white px-2 py-0.5 rounded-md font-bold">Dùng Mẫu Chuẩn</button>
+                        </div>
+                        <textarea v-model="form.tableDataStr" rows="5" class="w-full p-3 bg-slate-900 text-emerald-400 font-mono text-[10px] rounded-xl outline-none"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="text-[10px] font-black uppercase text-slate-400 block mb-1">Phân tầng kết quả (JSON)</label>
+                        <textarea v-model="form.interpretationStr" rows="3" class="w-full p-3 bg-slate-900 text-amber-400 font-mono text-[10px] rounded-xl outline-none"></textarea>
+                    </div>
+
+                    <button @click="saveScale" class="w-full py-4 bg-blue-600 text-white font-black rounded-2xl hover:shadow-lg hover:shadow-blue-200 transition-all uppercase tracking-widest">
+                        {{ isEditing ? 'Cập nhật thay đổi' : 'Lưu vào thư viện' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Hàm này sẽ tải file tương ứng khi nhấn vào Tab chuyên khoa
+    const loadCategoryData = async (catName) => {
+        selectedCategory.value = catName;
+        if (catName === 'Tất cả') return;
+
+        // Chuyển tên chuyên khoa thành tên file (VD: "Tim mạch" -> "tim_mach.json")
+        const fileName = catName.toLowerCase().replace(/\s+/g, '_') + '.json';
+        
+        try {
+            const response = await fetch(`data/${fileName}`);
+            const data = await response.json();
+            // Cập nhật hoặc thêm vào danh sách hiện tại
+            clinicalScales.value = data; 
+        } catch (e) {
+            console.error("Không tìm thấy file cho chuyên khoa này");
+        }
+    };
+    const { createApp, ref, computed, onMounted, watch } = Vue;
+
+    createApp({
+        setup() {
+            const currentView = ref('home');
+            const searchQuery = ref('');
+            const selectedCategory = ref('Tất cả');
+            const selectedScale = ref(null);
+            const isDarkMode = ref(false);
+            const clinicalScales = ref([]);
+            
+            // Form & Editing
+            const isEditing = ref(false);
+            const editIndex = ref(null);
+            const form = ref({
+                name: '', category: '', description: '', detail: '',
+                tableLayout: 'checklist',
+                tableDataStr: '', interpretationStr: ''
+            });
+
+            const layouts = [
+                { id: 'checklist', name: 'Checklist' },
+                { id: 'grouped', name: 'Nhóm (GCS)' },
+                { id: 'matrix', name: 'Lưới (Matrix)' }
+            ];
+
+            // TEMPLATES JSON
+            const templates = {
+                checklist: '[\n  {"label": "Tiêu chí A", "value": 1},\n  {"label": "Tiêu chí B", "value": 2}\n]',
+                grouped: '[\n  {\n    "groupName": "Nhóm 1",\n    "items": [\n      {"label": "Ý 1", "value": 1},\n      {"label": "Ý 2", "value": 0}\n    ]\n  }\n]',
+                matrix: '{\n  "headers": ["Thông số", "1đ", "2đ"],\n  "rows": [\n    {"label": "Tiêu chí X", "values": ["Dưới 5", "Trên 5"]},\n    {"label": "Tiêu chí Y", "values": ["Âm tính", "Dương tính"]}\n  ]\n}'
+            };
+
+            const interpretationTemplate = '[\n  {"score": "0-1", "action": "Xử trí A", "level": "low"},\n  {"score": "≥ 2", "action": "Xử trí B", "level": "high"}\n]';
+
+            onMounted(async () => {
+            // 1. Kiểm tra chế độ Dark Mode
+            if (localStorage.theme === 'dark') {
+                isDarkMode.value = true;
+                document.documentElement.classList.add('dark');
+            }
+
+            // 2. Tải dữ liệu từ file JSON bên ngoài
+            // Giả sử bạn có file chính là 'data/MedScale_Library.json'
+            try {
+                const response = await fetch('data/MedScale_Library.json');
+                if (!response.ok) throw new Error("Không tìm thấy file dữ liệu");
+                
+                const remoteData = await response.json();
+                clinicalScales.value = remoteData;
+                console.log("Đã tải dữ liệu từ file JSON thành công");
+            } catch (error) {
+                console.warn("Không thể tải file JSON, chuyển sang dùng LocalStorage:", error);
+                // Fallback: Nếu không có file JSON, dùng dữ liệu đã lưu trong trình duyệt
+                const saved = localStorage.getItem('medscale_v3');
+                if (saved) clinicalScales.value = JSON.parse(saved);
+            }
+            
+            resetForm();
+        });
+
+            watch(clinicalScales, (val) => {
+                localStorage.setItem('medscale_v3', JSON.stringify(val));
+            }, { deep: true });
+
+            const categories = computed(() => [...new Set(clinicalScales.value.map(s => s.category))]);
+            const filteredScales = computed(() => {
+                return clinicalScales.value.filter(s => 
+                    (s.name.toLowerCase().includes(searchQuery.value.toLowerCase()) || s.category.toLowerCase().includes(searchQuery.value.toLowerCase())) &&
+                    (selectedCategory.value === 'Tất cả' || s.category === selectedCategory.value)
+                );
+            });
+
+            // ACTIONS
+            const loadTemplate = () => {
+                form.value.tableDataStr = templates[form.value.tableLayout];
+                form.value.interpretationStr = interpretationTemplate;
+            };
+
+            const resetForm = () => {
+                isEditing.value = false;
+                editIndex.value = null;
+                form.value = {
+                    name: '', category: '', description: '', detail: '',
+                    tableLayout: 'checklist',
+                    tableDataStr: templates.checklist,
+                    interpretationStr: interpretationTemplate
+                };
+            };
+
+            const saveScale = () => {
+                try {
+                    const data = {
+                        id: isEditing.value ? clinicalScales.value[editIndex.value].id : Date.now(),
+                        name: form.value.name,
+                        category: form.value.category,
+                        description: form.value.description || form.value.name,
+                        detail: form.value.detail,
+                        tableLayout: form.value.tableLayout,
+                        tableData: JSON.parse(form.value.tableDataStr),
+                        interpretation: JSON.parse(form.value.interpretationStr)
+                    };
+
+                    if (isEditing.value) {
+                        clinicalScales.value[editIndex.value] = data;
+                        alert('Cập nhật thành công!');
+                    } else {
+                        clinicalScales.value.push(data);
+                        alert('Đã thêm mới!');
+                    }
+                    resetForm();
+                } catch (e) {
+                    alert('Lỗi định dạng JSON! Hãy kiểm tra lại dấu ngoặc.');
+                }
+            };
+
+            const editScale = (idx) => {
+                const s = clinicalScales.value[idx];
+                isEditing.value = true;
+                editIndex.value = idx;
+                form.value = {
+                    name: s.name, category: s.category, description: s.description, detail: s.detail,
+                    tableLayout: s.tableLayout,
+                    tableDataStr: JSON.stringify(s.tableData, null, 2),
+                    interpretationStr: JSON.stringify(s.interpretation, null, 2)
+                };
+                window.scrollTo(0,0);
+            };
+
+            const deleteScale = (idx) => {
+                if(confirm('Xóa thang điểm này?')) clinicalScales.value.splice(idx, 1);
+            };
+
+            // UTILS
+            const toggleDarkMode = () => {
+                isDarkMode.value = !isDarkMode.value;
+                document.documentElement.classList.toggle('dark');
+                localStorage.theme = isDarkMode.value ? 'dark' : 'light';
+            };
+
+            const goToHome = () => { currentView.value = 'home'; resetForm(); };
+            const goToManage = () => { currentView.value = 'manage'; };
+            const openDetail = (s) => { selectedScale.value = s; currentView.value = 'detail'; };
+
+            const getRiskClass = (l) => {
+                if (l === 'low') return 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 border-emerald-200 dark:border-emerald-800';
+                if (l === 'high') return 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 border-rose-200 dark:border-rose-800';
+                return 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 border-amber-200 dark:border-amber-800';
+            };
+
+            const downloadImage = async () => {
+                const el = document.getElementById('export-area');
+                const canvas = await html2canvas(el, { scale: 2, backgroundColor: isDarkMode.value ? '#1e293b' : '#ffffff' });
+                const a = document.createElement('a');
+                a.download = `MedScale_${selectedScale.value.name}.png`;
+                a.href = canvas.toDataURL();
+                a.click();
+            };
+
+            const triggerImport = () => document.getElementById('fileIn').click();
+            const importData = (e) => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const imported = JSON.parse(ev.target.result);
+                    clinicalScales.value = [...clinicalScales.value, ...imported];
+                    // Clean duplicates
+                    const unique = [];
+                    const map = new Map();
+                    for(const item of clinicalScales.value) {
+                        if(!map.has(item.name)) { map.set(item.name, true); unique.push(item); }
+                    }
+                    clinicalScales.value = unique;
+                    alert('Import thành công!');
+                };
+                reader.readAsText(e.target.files[0]);
+            };
+            const exportData = () => {
+                const blob = new Blob([JSON.stringify(clinicalScales.value, null, 2)], {type: 'application/json'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'MedScale_Library.json';
+                a.click();
+            };
+
+            return {
+                currentView, searchQuery, selectedCategory, selectedScale, isDarkMode, clinicalScales, categories, filteredScales,
+                form, layouts, isEditing, loadTemplate, resetForm, saveScale, editScale, deleteScale,
+                toggleDarkMode, goToHome, goToManage, openDetail, getRiskClass, downloadImage, triggerImport, importData, exportData
+            };
+        }
+        
+    }).mount('#app');
+</script>
+</body>
+</html>

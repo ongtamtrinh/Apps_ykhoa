@@ -1,0 +1,19 @@
+[
+    {
+    "id": 1700000002,
+    "category": "Cấp cứu",
+    "name": "qSOFA",
+    "description": "Đánh giá nhanh bệnh nhân nghi ngờ nhiễm trùng huyết.",
+    "detail": "qSOFA (quick SOFA) giúp nhận diện nhanh bệnh nhân có nguy cơ tử vong cao do nhiễm trùng huyết bên ngoài khoa ICU.",
+    "tableLayout": "checklist",
+    "tableData": [
+      { "label": "Nhịp thở ≥ 22 lần/phút", "value": 1 },
+      { "label": "Thay đổi ý thức (GCS < 15)", "value": 1 },
+      { "label": "Huyết áp tâm thu ≤ 100 mmHg", "value": 1 }
+    ],
+    "interpretation": [
+      { "score": "0 - 1 điểm", "action": "Không nguy cơ cao, tiếp tục theo dõi lâm sàng.", "level": "low" },
+      { "score": "≥ 2 điểm", "action": "Nguy cơ cao nhiễm trùng huyết, cần đánh giá SOFA đầy đủ và can thiệp tích cực.", "level": "high" }
+    ]
+  }
+]

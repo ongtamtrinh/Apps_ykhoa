@@ -28,27 +28,16 @@
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-darkBg dark:text-slate-100 min-h-screen">
 
-    <div id="config-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4">
-        <div class="bg-white dark:bg-darkCard p-6 rounded-3xl w-full max-w-md shadow-2xl">
-            <h2 class="text-xl font-black mb-4">Kết nối Cloud (Supabase)</h2>
-            <p class="text-xs text-slate-500 mb-4">Nhập thông tin từ Project Settings > API của bạn.</p>
-            <input type="text" id="sb-url" placeholder="Supabase URL" class="w-full border rounded-xl px-4 py-2 mb-3 dark:bg-slate-800 dark:border-slate-700">
-            <input type="password" id="sb-key" placeholder="Anon Key" class="w-full border rounded-xl px-4 py-2 mb-4 dark:bg-slate-800 dark:border-slate-700">
-            <button onclick="saveConfig()" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">KẾT NỐI NGAY</button>
-        </div>
-    </div>
-
     <header class="bg-white/80 dark:bg-darkCard/80 backdrop-blur-md border-b dark:border-slate-700 sticky top-0 z-30 px-4 py-3 shadow-sm">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
                 <div class="bg-blue-600 p-1.5 rounded-lg text-white font-bold text-xl">SB</div>
                 <div>
                     <h1 class="text-lg font-extrabold tracking-tight leading-none">SBAR PRO <span class="text-blue-600">V4.0</span></h1>
-                    <span id="sync-status" class="text-[9px] font-bold text-slate-400 uppercase">Offline Mode</span>
+                    <span id="sync-status" class="text-[9px] font-bold text-slate-400 uppercase">Đang kết nối...</span>
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <button onclick="document.getElementById('config-modal').classList.remove('hidden')" class="p-2 opacity-50 hover:opacity-100">⚙️</button>
                 <button onclick="toggleDarkMode()" class="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-xl">🌙</button>
                 <input type="date" id="duty-date" onchange="loadPatients()" class="text-sm font-bold border rounded-xl px-3 py-2 dark:bg-slate-800 dark:border-slate-700">
             </div>
@@ -121,7 +110,7 @@
                 </div>
                 
                 <div id="patient-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    </div>
+                </div>
             </div>
         </div>
     </main>
@@ -155,41 +144,32 @@
     </div>
 
     <script>
-        let db = null; // Đã đổi tên biến thành 'db' để tránh xung đột
+        // =========================================================================
+        // THÔNG TIN SUPABASE ĐÃ ĐƯỢC FIX CỨNG
+        // =========================================================================
+        const DEFAULT_SB_URL = 'https://jcistmhaalbjdrmzwfyu.supabase.co';
+        const DEFAULT_SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpjaXN0bWhhYWxiamRybXp3Znl1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5NTIzNDUsImV4cCI6MjA5MTUyODM0NX0.RCMwDElQ1vKOpdj08IdtpVvmyZKww6EIaVLoqhbF-9U';
+        // =========================================================================
+
+        let db = null; 
         let patients = [];
         let currentEditingId = null; 
         let currentViewingId = null; 
         let currentTags = [];
 
         // --- SUPABASE SETUP ---
-        function saveConfig() {
-            const url = document.getElementById('sb-url').value;
-            const key = document.getElementById('sb-key').value;
-            if(!url || !key) return alert("Vui lòng nhập đủ URL và Key!");
-            
-            // Lưu cấu hình
-            localStorage.setItem('sb_url', url);
-            localStorage.setItem('sb_key', key);
-            
-            // Ẩn form đi và thử kết nối ngay lập tức
-            document.getElementById('config-modal').classList.add('hidden');
-            if(initSupabase()) {
-                loadPatients();
-            }
-        }
-
         function initSupabase() {
-            const url = localStorage.getItem('sb_url');
-            const key = localStorage.getItem('sb_key');
-            if(url && key) {
-                // Gọi đúng thư viện gốc window.supabase
-                db = window.supabase.createClient(url, key); 
+            try {
+                db = window.supabase.createClient(DEFAULT_SB_URL, DEFAULT_SB_KEY); 
                 document.getElementById('sync-status').innerText = "☁️ Cloud Connected";
                 document.getElementById('sync-status').className = "text-[9px] font-bold text-emerald-500 uppercase";
                 return true;
+            } catch (error) {
+                console.error("Lỗi khởi tạo Supabase:", error);
+                document.getElementById('sync-status').innerText = "⚠️ Lỗi kết nối";
+                document.getElementById('sync-status').className = "text-[9px] font-bold text-red-500 uppercase";
+                return false;
             }
-            document.getElementById('config-modal').classList.remove('hidden');
-            return false;
         }
 
         // --- CORE ACTIONS ---
@@ -218,7 +198,7 @@
 
             const payload = {
                 room: document.getElementById('room').value,
-                name: name, // Sử dụng biến name đã in hoa
+                name: name,
                 dx: document.getElementById('dx').value,
                 content: document.getElementById('content').value,
                 priority: document.getElementById('priority').value,
@@ -238,7 +218,6 @@
             else {
                 clearForm();
                 loadPatients();
-                localStorage.removeItem('sbar_draft');
             }
         }
 
@@ -390,6 +369,8 @@
             if(localStorage.getItem('sbar_theme') === 'dark') document.documentElement.classList.add('dark');
             const d = document.getElementById('duty-date');
             if(!d.value) d.value = new Date().toISOString().split('T')[0];
+            
+            // Khởi tạo Supabase ngay khi load trang và tải dữ liệu
             if(initSupabase()) loadPatients();
         }
     </script>
